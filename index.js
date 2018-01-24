@@ -436,27 +436,27 @@ module.exports = class MassiveCollection {
             // LIKE
             if(field.match(/\s+(LIKE)$/i) || field.match(/\s+~~$/)) {
               currentCondition = field.split(' ')[0];
-              currentCondition += " LIKE " + cnds[field];
+              currentCondition += " LIKE '" + cnds[field] + "'";
               where.push(currentCondition);
             }
 
             // NOT LIKE
-            if(field.match(/\s+NOT\s+LIKE)$/i) || field.match(/\s+\!~~$/)) {
+            if(field.match(/\s+NOT\s+LIKE$/i) || field.match(/\s+\!~~$/)) {
               currentCondition = field.split(' ')[0];
-              currentCondition += " NOT LIKE " + cnds[field];
+              currentCondition += " NOT LIKE '" + cnds[field] + "'";
               where.push(currentCondition);
             }
 
             // ILIKE
-            if(field.match(/\s+SIMILAR\s+TO)$/i)) {
+            if(field.match(/\s+SIMILAR\s+TO$/i)) {
               currentCondition = field.split(' ')[0];
-              currentCondition += " SIMILAR TO " + cnds[field];
+              currentCondition += " SIMILAR TO '" + cnds[field] + "'";
               where.push(currentCondition);
             }
 
-            if(field.match(/\s+NOT\s+SIMILAR\s+TO)$/i)) {
+            if(field.match(/\s+NOT\s+SIMILAR\s+TO$/i)) {
               currentCondition = field.split(' ')[0];
-              currentCondition += " NOT SIMILAR TO " + cnds[field];
+              currentCondition += " NOT SIMILAR TO '" + cnds[field] + "'";
               where.push(currentCondition);
             }
           }
@@ -484,19 +484,21 @@ module.exports = class MassiveCollection {
 
           customQuery += fields;
 
-          
+          customQuery += " FROM " + this.tableName;
+
+          customQuery += " WHERE " + or.join(' OR ');
         }
 
-        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.db.run(customQuery);
-
-        this.db.find(conditions, options)
+        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.connection.run(customQuery);
+        
+        query
           .then((res) => {
             if (!!this.toJS)
               res.map(r => this.toJS(r));
-
+        
             if (!!this.post.find)
               this.post.find(res);
-
+        
             resolve(res);
           })
           .catch(err => {

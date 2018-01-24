@@ -12,10 +12,11 @@ Let's admit we have a users table :
 
 ```sql
 (
+  id       serial primary key
   name     varchar(255),
   infos    jsonb not null,
-  created  timestamp with time zone,
-  modified timestamp with time zone
+  created  timestamp with time zone default now(),
+  modified timestamp with time zone default now()
 )
 ```
 
