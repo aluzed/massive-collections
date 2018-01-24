@@ -373,6 +373,122 @@ module.exports = class MassiveCollection {
     })
     .then(() => {
       return new Promise((resolve, reject) => {
+
+        let searchType = "normal";
+        let customQuery = "SELECT ";
+
+        for(let field in conditions) {
+          if(field.match(/->>/) || field.match(/#>>/)) {
+            searchType = "jsonb";
+          }
+        }
+
+        function ParseConditions(cnds) {
+          let where = [];
+
+          for(let field in cnds) {
+            let currentCondition = "";
+
+            if(field.match(/\s+>$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " > " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            if(field.match(/\s+<$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " < " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            if(field.match(/\s+<=$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " <= " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            if(field.match(/\s+>=$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " >= " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            // Not in
+            if(field.match(/\s+(\<\>)$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " NOT IN " + JSON.stringify(cnds[field]);
+              where.push(currentCondition);
+            }
+
+            // Is not
+            if(field.match(/\s+\!=$/) || field.match(/\s+\!$/) || field.match(/\s+IS\s+NOT$/i)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " NOT " + JSON.stringify(cnds[field]);
+              where.push(currentCondition);
+            }
+
+            // In
+            if(currentCondition === "" && typeof cnds[field].splice === "function") {
+              currentCondition = field + " IN " + JSON.stringify(cnds[field]);
+              where.push(currentCondition);
+            }
+
+            // LIKE
+            if(field.match(/\s+(LIKE)$/i) || field.match(/\s+~~$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " LIKE " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            // NOT LIKE
+            if(field.match(/\s+NOT\s+LIKE)$/i) || field.match(/\s+\!~~$/)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " NOT LIKE " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            // ILIKE
+            if(field.match(/\s+SIMILAR\s+TO)$/i)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " SIMILAR TO " + cnds[field];
+              where.push(currentCondition);
+            }
+
+            if(field.match(/\s+NOT\s+SIMILAR\s+TO)$/i)) {
+              currentCondition = field.split(' ')[0];
+              currentCondition += " NOT SIMILAR TO " + cnds[field];
+              where.push(currentCondition);
+            }
+          }
+
+          return where;
+        }
+
+        if(searchType === "jsonb") {
+          let or = [];
+
+          if(typeof conditions['or'] !== "undefined") {
+            for(let o in conditions['or']) {
+              or.push(ParseConditions(conditions['or'][o]).join(' AND '));
+            }
+          }
+          else {
+            or.push(ParseConditions(conditions).join(' AND '));
+          }
+
+          let fields = "*";
+
+          if(typeof options.columns !== "undefined") {
+            fields = options.columns.join(", ");
+          }
+
+          customQuery += fields;
+
+          
+        }
+
+        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.db.run(customQuery);
+
         this.db.find(conditions, options)
           .then((res) => {
             if (!!this.toJS)
