@@ -1,0 +1,24 @@
+{
+  "name": "massive-collections",
+  "version": "1.0.0",
+  "description": "The easiest collections handler for massive-js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "massive-js",
+    "postgresql",
+    "collections",
+    "wrapper"
+  ],
+  "author": "Alexandre PENOMBRE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aluzed/massive-collections.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.1"
+  }
+}
