@@ -54,7 +54,7 @@ Each method returns a Promise.
 | Parameter  | Type   | Description                               | Example                                                                                   |
 |:-----------|:-------|:------------------------------------------|:------------------------------------------------------------------------------------------|
 | conditions | Object | WHERE conditions                          | { "name  }                                                                                |
-| options    | Object | Other options, like limit, offset, etc... | { columns: ["name", "price", "description"], order: "price desc", offset: 20, limit: 10 } |
+| options    | Object | Other options, like limit, offset, etc... | { columns: ["name", "price", "description"], order: {field: "price", direction: "desc"}, offset: 20, limit: 10 } |
 
 `Collection.find(conditions, options)`
 
@@ -238,5 +238,14 @@ UsersCollection.find({
 // Get value then cast
 UsersCollection.find({
   "(infos->>'followers')::float >": 600
+}).then(res => console.log(res));
+
+// Sort
+UsersCollection.find({}, {
+  order: [{
+    field: "infos->>'followers'",
+    direction: "DESC",
+    type: "int"
+  }]
 }).then(res => console.log(res));
 ```

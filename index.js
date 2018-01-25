@@ -377,9 +377,19 @@ module.exports = class MassiveCollection {
         let searchType = "normal";
         let customQuery = "SELECT ";
 
+        // Check if there is a jsonb field
         for(let field in conditions) {
           if(field.match(/->/) || field.match(/#>/)) {
             searchType = "jsonb";
+          }
+        }
+
+        // Check if there is a jsonb sort
+        if(typeof options.order !== "undefined" && searchType === "normal") {
+          for(let i in options.order) {
+            if(options.order[i].field.match(/->/) || options.order[i].field.match(/#>/)) {
+              searchType = "jsonb";
+            }
           }
         }
 
@@ -469,11 +479,15 @@ module.exports = class MassiveCollection {
 
           if(typeof conditions['or'] !== "undefined") {
             for(let o in conditions['or']) {
-              or.push(ParseConditions(conditions['or'][o]).join(' AND '));
+              let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
+              if(newCond !== "")
+                or.push(newCond);
             }
           }
           else {
-            or.push(ParseConditions(conditions).join(' AND '));
+            let newCond = ParseConditions(conditions).join(' AND ');
+            if(newCond !== "")
+              or.push(newCond);
           }
 
           let fields = "*";
@@ -486,7 +500,26 @@ module.exports = class MassiveCollection {
 
           customQuery += " FROM " + this.tableName;
 
-          customQuery += " WHERE " + or.join(' OR ');
+          if(or.length > 0)
+            customQuery += " WHERE " + or.join(' OR ');
+
+          if(typeof options.order !== "undefined")
+            customQuery += " ORDER BY " + options.order.map(o => {
+              let str = o.field;
+
+              let direction = !!o.direction ? o.direction : "ASC";
+
+              if (typeof o.type !== "undefined")
+                str = '(' + str + ')::' + o.type;
+
+              return str + " " + direction;
+            }).join(', ');
+
+          if(typeof options.limit !== "undefined")
+            customQuery += " LIMIT " + options.limit;
+
+          if(typeof options.offset !== "undefined")
+            customQuery += " OFFSET " + options.offset;
         }
 
         let query = (searchType === "normal") ? this.db.find(conditions, options) : this.connection.run(customQuery)
