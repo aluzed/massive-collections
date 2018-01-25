@@ -489,8 +489,6 @@ module.exports = class MassiveCollection {
           customQuery += " WHERE " + or.join(' OR ');
         }
 
-        console.log(customQuery);
-
         let query = (searchType === "normal") ? this.db.find(conditions, options) : this.connection.run(customQuery)
 
         query

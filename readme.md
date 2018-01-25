@@ -28,6 +28,7 @@ Create a collection file : `users.js`
 const { ColumnMissing } = require('massive-collections/errors');
 const Collection = require('massive-collections');
 
+// Get the connection from massive
 module.exports = (db) => {
 
   const UsersCollection = new Collection('users', db);
