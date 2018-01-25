@@ -378,7 +378,7 @@ module.exports = class MassiveCollection {
         let customQuery = "SELECT ";
 
         for(let field in conditions) {
-          if(field.match(/->>/) || field.match(/#>>/)) {
+          if(field.match(/->/) || field.match(/#>/)) {
             searchType = "jsonb";
           }
         }
@@ -441,7 +441,7 @@ module.exports = class MassiveCollection {
             }
 
             // NOT LIKE
-            if(field.match(/\s+NOT\s+LIKE$/i) || field.match(/\s+\!~~$/)) {
+            if(field.match(/\s+(NOT)\s+(LIKE)$/i) || field.match(/\s+\!~~$/)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " NOT LIKE '" + cnds[field] + "'";
               where.push(currentCondition);
@@ -489,16 +489,18 @@ module.exports = class MassiveCollection {
           customQuery += " WHERE " + or.join(' OR ');
         }
 
-        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.connection.run(customQuery);
-        
+        console.log(customQuery);
+
+        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.connection.run(customQuery)
+
         query
           .then((res) => {
             if (!!this.toJS)
               res.map(r => this.toJS(r));
-        
+
             if (!!this.post.find)
               this.post.find(res);
-        
+
             resolve(res);
           })
           .catch(err => {

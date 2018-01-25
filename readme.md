@@ -14,6 +14,7 @@ Let's admit we have a users table :
 (
   id       serial primary key
   name     varchar(255),
+  age      smallint,
   infos    jsonb not null,
   created  timestamp with time zone default now(),
   modified timestamp with time zone default now()
@@ -194,3 +195,47 @@ UsersCollection.postHook('update', function (data) {
 * post->remove(data)
 
 For Pre Insert and Pre Update, you must pass `data` through the `next` callback.
+
+### Custom queries
+
+**Like** : **~~** :
+
+```javascript
+UsersCollection.find({
+  "name ~~": 'ja%'
+}).then(res => console.log(res));
+```
+
+**Not Like** : **!~~** :
+
+```javascript
+UsersCollection.find({
+  "name !~~": 'ja%'
+}).then(res => console.log(res));
+```
+
+**Compare** : **>** **<** **<=** **>=** :
+```javascript
+UsersCollection.find({
+  "age >": 30
+}).then(res => console.log(res));
+```
+
+**JSONB queries** :
+
+Let's assume that we have a columns `infos` :
+```
+{ "email": "...", "followers": 5000 }
+```
+
+```javascript
+// Value in object like
+UsersCollection.find({
+  "infos->>'email' ~~": "jo%"
+}).then(res => console.log(res));
+
+// Get value then cast
+UsersCollection.find({
+  "(infos->>'followers')::float >": 600
+}).then(res => console.log(res));
+```
