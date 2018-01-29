@@ -384,6 +384,18 @@ module.exports = class MassiveCollection {
           }
         }
 
+        if(searchType === "normal" && typeof conditions.or !== "undefined") {
+          for(let a in conditions.or) {
+            let currentCondition = conditions.or[a];
+
+            for (let field in currentCondition) {
+              if (field.match(/->/) || field.match(/#>/))  {
+                searchType = "jsonb";
+              }
+            }
+          }
+        }
+
         // Check if there is a jsonb sort
         if(typeof options.order !== "undefined" && searchType === "normal") {
           for(let i in options.order) {
@@ -398,29 +410,34 @@ module.exports = class MassiveCollection {
 
           for(let field in cnds) {
             let currentCondition = "";
+            let matched = false;
 
             if(field.match(/\s+>$/)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " > " + cnds[field];
               where.push(currentCondition);
+              matched = true;
             }
 
             if(field.match(/\s+<$/)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " < " + cnds[field];
               where.push(currentCondition);
+              matched = true;
             }
 
             if(field.match(/\s+<=$/)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " <= " + cnds[field];
               where.push(currentCondition);
+              matched = true;
             }
 
             if(field.match(/\s+>=$/)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " >= " + cnds[field];
               where.push(currentCondition);
+              matched = true;
             }
 
             // Not in
@@ -428,6 +445,7 @@ module.exports = class MassiveCollection {
               currentCondition = field.split(' ')[0];
               currentCondition += " NOT IN " + JSON.stringify(cnds[field]);
               where.push(currentCondition);
+              matched = true;
             }
 
             // Is not
@@ -435,12 +453,14 @@ module.exports = class MassiveCollection {
               currentCondition = field.split(' ')[0];
               currentCondition += " NOT " + JSON.stringify(cnds[field]);
               where.push(currentCondition);
+              matched = true;
             }
 
             // In
             if(currentCondition === "" && typeof cnds[field].splice === "function") {
               currentCondition = field + " IN " + JSON.stringify(cnds[field]);
               where.push(currentCondition);
+              matched = true;
             }
 
             // LIKE
@@ -448,6 +468,7 @@ module.exports = class MassiveCollection {
               currentCondition = field.split(' ')[0];
               currentCondition += " LIKE '" + cnds[field] + "'";
               where.push(currentCondition);
+              matched = true;
             }
 
             // NOT LIKE
@@ -455,6 +476,7 @@ module.exports = class MassiveCollection {
               currentCondition = field.split(' ')[0];
               currentCondition += " NOT LIKE '" + cnds[field] + "'";
               where.push(currentCondition);
+              matched = true;
             }
 
             // ILIKE
@@ -462,12 +484,18 @@ module.exports = class MassiveCollection {
               currentCondition = field.split(' ')[0];
               currentCondition += " SIMILAR TO '" + cnds[field] + "'";
               where.push(currentCondition);
+              matched = true;
             }
 
             if(field.match(/\s+NOT\s+SIMILAR\s+TO$/i)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " NOT SIMILAR TO '" + cnds[field] + "'";
               where.push(currentCondition);
+              matched = true;
+            }
+
+            if(!matched) {
+              where.push(field + " = '" + cnds[field] + "'");
             }
           }
 
@@ -479,6 +507,7 @@ module.exports = class MassiveCollection {
 
           if(typeof conditions['or'] !== "undefined") {
             for(let o in conditions['or']) {
+
               let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
               if(newCond !== "")
                 or.push(newCond);
