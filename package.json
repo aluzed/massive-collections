@@ -1,6 +1,6 @@
 {
   "name": "massive-collections",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The easiest collections handler for massive-js",
   "main": "index.js",
   "scripts": {

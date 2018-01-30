@@ -463,8 +463,8 @@ module.exports = class MassiveCollection {
               matched = true;
             }
 
-            // LIKE
-            if(field.match(/\s+(LIKE)$/i) || field.match(/\s+~~$/)) {
+            // LIKE (one space and 'like' or '... ~~')
+            if((field.match(/\s/g) || []).length === 1 && field.match(/\s+(LIKE)$/i) || field.match(/\s+~~$/)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " LIKE '" + cnds[field] + "'";
               where.push(currentCondition);
@@ -479,17 +479,20 @@ module.exports = class MassiveCollection {
               matched = true;
             }
 
-            // ILIKE
-            if(field.match(/\s+SIMILAR\s+TO$/i)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " SIMILAR TO '" + cnds[field] + "'";
+            // CASE INSENSITIVE
+
+            // ILIKE (one space and 'ilike')
+            if(field.match(/\s+(ILIKE)$/i) && (field.match(/\s/g) || []).length === 1) {
+              currentCondition = "LOWER(" + field.split(' ')[0] + ")";
+              currentCondition += " LIKE LOWER('" + cnds[field] + "')";
               where.push(currentCondition);
               matched = true;
             }
 
-            if(field.match(/\s+NOT\s+SIMILAR\s+TO$/i)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " NOT SIMILAR TO '" + cnds[field] + "'";
+            // NOT LIKE
+            if(field.match(/\s+(NOT)\s+(ILIKE)$/i)) {
+              currentCondition = "LOWER(" + field.split(' ')[0] + ")";
+              currentCondition += " NOT LIKE LOWER('" + cnds[field] + "')";
               where.push(currentCondition);
               matched = true;
             }

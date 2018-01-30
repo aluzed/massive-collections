@@ -215,6 +215,22 @@ UsersCollection.find({
 }).then(res => console.log(res));
 ```
 
+**iLike** (case insensitive) :
+
+```javascript
+UsersCollection.find({
+  "name ilike": '%joh%'
+}).then(res => console.log(res));
+```
+
+**Not iLike** (case insensitive) :
+
+```javascript
+UsersCollection.find({
+  "name not ilike": '%joh%'
+}).then(res => console.log(res));
+```
+
 **Compare** : **>** **<** **<=** **>=** :
 ```javascript
 UsersCollection.find({
