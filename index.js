@@ -441,7 +441,7 @@ module.exports = class MassiveCollection {
             }
 
             // Not in
-            if(field.match(/\s+(\<\>)$/)) {
+          if(field.match(/\s+(\<\>)$/) || field.match(/NOT\s+IN$/i)) {
               currentCondition = field.split(' ')[0];
               currentCondition += " NOT IN " + JSON.stringify(cnds[field]);
               where.push(currentCondition);
@@ -451,14 +451,14 @@ module.exports = class MassiveCollection {
             // Is not
             if(field.match(/\s+\!=$/) || field.match(/\s+\!$/) || field.match(/\s+IS\s+NOT$/i)) {
               currentCondition = field.split(' ')[0];
-              currentCondition += " NOT " + JSON.stringify(cnds[field]);
+              currentCondition += " NOT " + JSON.stringify(cnds[field]).replace('[', '(').replace(']', ')');
               where.push(currentCondition);
               matched = true;
             }
 
-            // In
-            if(currentCondition === "" && typeof cnds[field].splice === "function") {
-              currentCondition = field + " IN " + JSON.stringify(cnds[field]);
+            // In (only one space and 'in' or cnds[field] is an array)
+            if(currentCondition === "" && typeof cnds[field].splice === "function" || (field.match(/\s/g) || []).length === 1 && field.match(/IN$/i)) {
+              currentCondition = field + " IN " + JSON.stringify(cnds[field]).replace('[', '(').replace(']', ')');
               where.push(currentCondition);
               matched = true;
             }
