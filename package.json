@@ -29,5 +29,8 @@
   },
   "jest": {
     "testEnvironment": "node"
+  },
+  "bin": {
+    "massive-collections-cli": "./massive-collections-cli"
   }
 }
