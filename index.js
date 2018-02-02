@@ -379,8 +379,8 @@ module.exports = class MassiveCollection {
             if (!!this.toJS)
               res = this.toJS(res);
 
-            if (!!this.post.find)
-              this.post.find(res);
+            if (!!this.post.get)
+              this.post.get(res);
 
             resolve(res);
           })
