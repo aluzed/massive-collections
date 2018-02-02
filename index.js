@@ -34,6 +34,7 @@ module.exports = class MassiveCollection {
 
     // Hooks
     this.pre = {
+      get: null,
       flush: null,
       insert: null,
       update: null,
@@ -42,6 +43,7 @@ module.exports = class MassiveCollection {
     };
 
     this.post = {
+      get: null,
       flush: null,
       insert: null,
       update: null,
@@ -347,6 +349,49 @@ module.exports = class MassiveCollection {
   }
 
   /**
+  * @entry get
+  * @type Method
+  *
+  * Get an item at a specific index
+  *
+  * @param {Number} id
+  * @constraint id must be type of number
+  */
+  get(id) {
+    if(typeof id !== "number") 
+      throw new Error('Id must be typeof number');
+
+    return new Promise((resolve, reject) => {
+      if(!!this.pre.get)
+        this.pre.get(resolve);
+      else
+        resolve();
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        this.db.find({ id })
+          .then((res) => {
+            if(!res[0])
+              resolve(null);
+
+            res = res[0];
+
+            if (!!this.toJS)
+              res = this.toJS(res);
+
+            if (!!this.post.find)
+              this.post.find(res);
+
+            resolve(res);
+          })
+          .catch(err => {
+            reject(err);
+          })
+      })
+    })
+  }
+
+  /**
    * @entry find
    * @type Method
    *
@@ -364,12 +409,10 @@ module.exports = class MassiveCollection {
       options = {};
 
     return new Promise((resolve, reject) => {
-      if (!!this.pre.find) {
+      if (!!this.pre.find)
         this.pre.find(resolve);
-      }
-      else {
+      else
         resolve();
-      }
     })
     .then(() => {
       return new Promise((resolve, reject) => {

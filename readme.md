@@ -41,6 +41,7 @@ module.exports = (db) => {
 
 Now you can use following methods :
 
+* get (id)
 * find
 * insert
 * update
@@ -49,11 +50,27 @@ Now you can use following methods :
 
 Each method returns a Promise.
 
+### Get method
+
+| Parameter  | Type   | Description      | Example  |
+|:-----------|:-------|:-----------------|:---------|
+| id         | Number | ID               | 5        |
+
+`Collection.get(id)`
+
+```javascript
+
+  Users.get(10).then(user => {
+    console.log(user);
+  });
+
+```
+
 ### Find method
 
 | Parameter  | Type   | Description                               | Example                                                                                   |
 |:-----------|:-------|:------------------------------------------|:------------------------------------------------------------------------------------------|
-| conditions | Object | WHERE conditions                          | { "name  }                                                                                |
+| conditions | Object | WHERE conditions                          | { "name ~~": "jo%"  }  // name like                                                       |
 | options    | Object | Other options, like limit, offset, etc... | { columns: ["name", "price", "description"], order: {field: "price", direction: "desc"}, offset: 20, limit: 10 } |
 
 `Collection.find(conditions, options)`
@@ -184,11 +201,13 @@ UsersCollection.postHook('update', function (data) {
 
 ### List of Hooks
 
+* pre->get(next)
 * pre->find(next)
 * pre->flush(next)
 * pre->insert(next, data)
 * pre->update(next, data)
 * pre->remove(next)
+* post->get(data)
 * post->find(data)
 * post->flush(data)
 * post->insert(data)

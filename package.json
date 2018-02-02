@@ -1,10 +1,11 @@
 {
   "name": "massive-collections",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "The easiest collections handler for massive-js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "watch": "jest --watch"
   },
   "keywords": [
     "massive-js",
@@ -19,6 +20,14 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.1"
+    "bluebird": "^3.5.1",
+    "color-log": "^0.0.2",
+    "massive": "^4.6.3"
+  },
+  "devDependencies": {
+    "jest-cli": "^22.1.4"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }
