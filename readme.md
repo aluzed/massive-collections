@@ -299,8 +299,10 @@ Once you are connected, you generate automatically a new file : `massive-collect
 Then, you can create tables (in a terminal) :
 
 ```
-massive-collections-cli createTable posts title:varchar(255):unique:notnull content:text picture:integer author:integer details:jsonb created:timestampz:noindex:null:now()
+# Note that we use double quote to prevent bash errors
+massive-collections-cli createTable posts "title:varchar(255):unique:notnull" "content:text" "picture:integer" "author:integer" "details:jsonb" "created:timestampz:noindex:null:now()"
 ```
+
 
 Do not add an id column, this is automatic.
 

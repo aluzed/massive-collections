@@ -8,10 +8,11 @@
       "type": "node",
       "request": "launch",
       "name": "Cli",
-      "program": "${workspaceFolder}/massive-collections-cli.js",
+      "program": "${workspaceFolder}/bin/massive-collections-cli.js",
       "args": [
         "createTable",
         "posts",
+        "slug:varchar(255)",
         "title:varchar(255):unique:notnull",
         "content:text",
         "author:int",

@@ -293,8 +293,9 @@ try {
   }
 }
 catch(err) {
-  log.error(JSON.stringify(err));
+  log.error(err.message);
   log.error('Please read the documentation : massive-collections-cli help');
+  process.exit(1);
 }
 
 module.exports = {

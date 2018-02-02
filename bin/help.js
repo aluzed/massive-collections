@@ -43,10 +43,10 @@ log.info(`
 log.warn(`
   Example :
   massive-collections createTable users \\
-  username:varchar(255):unique:notnull \\
-  password:varchar(255):noindex:notnull \\
-  age:int \\
-  details:jsonb \\
-  created:timestampz:noindex:null:now() \\
-  modified:timestampz:noindex:null:now()
+    "username:varchar(255):unique:notnull" \\
+    "password:varchar(255):noindex:notnull" \\
+    "age:int" \\
+    "details:jsonb" \\
+    "created:timestampz:noindex:null:now()" \\
+    "modified:timestampz:noindex:null:now()"
 `);
