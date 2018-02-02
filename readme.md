@@ -291,7 +291,7 @@ You can create table from a terminal with massive-collections-cli. Let's assume 
 You need to connect first (in a terminal) : 
 
 ```
-massive-collection-cli connect --h=localhost:5432 --db=test_db --u=root --p=root
+node_modules/.bin/massive-collection-cli connect --h=localhost:5432 --db=test_db --u=root --p=root
 ```
 
 Once you are connected, you generate automatically a new file : `massive-collections_credentials.json` that should automatically be added to your .gitignore.
@@ -300,7 +300,7 @@ Then, you can create tables (in a terminal) :
 
 ```
 # Note that we use double quote to prevent bash errors
-massive-collections-cli createTable posts "title:varchar(255):unique:notnull" "content:text" "picture:integer" "author:integer" "details:jsonb" "created:timestampz:noindex:null:now()"
+node_modules/.bin/massive-collections-cli createTable posts "title:varchar(255):unique:notnull" "content:text" "picture:integer" "author:integer" "details:jsonb" "created:timestampz:noindex:null:now()"
 ```
 
 
@@ -309,11 +309,11 @@ Do not add an id column, this is automatic.
 If you want to remove properly your credentials, you can disconnect (in a terminal) :
 
 ```
-massive-collections-cli disconnect
+node_modules/.bin/massive-collections-cli disconnect
 ```
 
 Please read the documentation first (in a terminal) :
 
 ```
-massive-collections-cli help
+node_modules/.bin/massive-collections-cli help
 ```
