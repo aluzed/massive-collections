@@ -1,6 +1,6 @@
 {
   "name": "massive-collections",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "The easiest collections handler for massive-js",
   "main": "index.js",
   "scripts": {
@@ -31,6 +31,6 @@
     "testEnvironment": "node"
   },
   "bin": {
-    "massive-collections-cli": "./massive-collections-cli"
+    "massive-collections-cli": "./bin/massive-collections-cli.js"
   }
 }
