@@ -293,7 +293,7 @@ try {
   }
 }
 catch(err) {
-  log.error(err);
+  log.error(JSON.stringify(err));
   log.error('Please read the documentation : massive-collections-cli help');
 }
 
