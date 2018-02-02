@@ -1,3 +1,7 @@
+#!/usr/bin/env node
+
+/* eslint-disable no-console */
+'use strict';
 const log = require('color-log');
 const argv = require('minimist')(process.argv.slice(2));
 const path = require('path');
@@ -276,7 +280,7 @@ try {
         const cols = argv._.splice(2, argv._.length);
 
         const query = createTable(tableName, cols);
-        
+
         runQuery(query);
       break;
 
