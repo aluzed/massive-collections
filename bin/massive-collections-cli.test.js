@@ -20,5 +20,5 @@ test('Should generate a proper create table users query', () => {
   // Expect the query to contain each column plus an id column
   expect(colCount).toBe((colsList.length + 1));
 
-  console.log(query);
+  // console.log(query);
 });

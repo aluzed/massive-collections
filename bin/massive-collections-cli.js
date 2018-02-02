@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const massive = require('massive');
+const helpFile = path.join(__dirname, '..' ,'help');
 
 const currentPath = path.resolve(__dirname);
 
@@ -260,8 +261,7 @@ function runQuery(query) {
 try {
   // Handle argv
   if(argv._.length > 0) {
-    console.log(argv);
-
+    
     switch(argv._[0]) {
       case 'connect':
         connect(argv.h, argv.db, argv.u, argv.p);
@@ -286,7 +286,7 @@ try {
 
       case 'help':
         // Cleaner
-        require('./help');
+        require(helpFile);
       break;
     }
   }
