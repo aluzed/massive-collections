@@ -8,7 +8,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const massive = require('massive');
-const helpFile = path.join(__dirname, '..' ,'help');
+const helpFile = './help';
 
 const currentPath = path.resolve(__dirname);
 
@@ -40,10 +40,11 @@ if(currentPath.indexOf('node_modules') > -1) {
     // If credientials is not in gitignore
     if(!found) {
       // Add it
-      splitted.push(credentialsRelative);
+      splitted.push('.' + credentialsRelative);
 
       // Save
-      fs.writeFileSync(gitIgnorePath, splitted.join(os.EOL));
+      fs.writeFileSync(gitIgnorePath,
+        splitted.filter(r => r.trim() !== "").join(os.EOL)); // remove empty rows
     }
   }
 }
@@ -261,7 +262,7 @@ function runQuery(query) {
 try {
   // Handle argv
   if(argv._.length > 0) {
-    
+
     switch(argv._[0]) {
       case 'connect':
         connect(argv.h, argv.db, argv.u, argv.p);
