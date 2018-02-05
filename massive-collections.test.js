@@ -16,7 +16,7 @@ describe('Massive-Collections tests', () => {
 
   test('Should create a fake table in our database', (done) => {
     const fakeTableQuery = fs.readFileSync('./faketable.sql', 'utf8');
-  
+
     process.db.query(fakeTableQuery).then(() => {
       const FakeTable = new Collection('fake_table', process.db);
 
@@ -30,19 +30,33 @@ describe('Massive-Collections tests', () => {
       });
     });
   });
-    
+
   test('Should insert data', (done) => {
     const FakeTable = new Collection('fake_table', process.db);
 
-    FakeTable.insert({ 
+    FakeTable.insert({
       username: 'John Doe',
       password: 'qwerty'
-    }).then((fakeRow) => {
-      expect(fakeRow.username).toBe('John Doe');
-      expect(fakeRow.password).toBe('qwerty');
-      done();
-    })
+    }).then(() => {
 
-  }); 
+      FakeTable.find({}).then(res => {
+        expect(res.length).toBe(1);
+        expect(res[0].username).toBe('John Doe');
+        expect(res[0].password).toBe('qwerty');
+        done();
+      });
+    });
+  });
 
+
+  test('Should clean data', (done) => {
+    const FakeTable = new Collection('fake_table', process.db);
+
+    FakeTable.flush().then(() => {
+      FakeTable.find({}).then(res => {
+        expect(res.length).toBe(0);
+        done();
+      });
+    });
+  });
 })
