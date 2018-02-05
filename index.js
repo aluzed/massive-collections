@@ -18,14 +18,13 @@ module.exports = class MassiveCollection {
    * Class collection
    *
    * @param {String} tableName
-   * @param {Object} connection
+   * @param {Object} cnx
    */
-  constructor(tableName, connection) {
+  constructor(tableName, cnx) {
     if(typeof tableName === "undefined")
       throw new MissingArg('tableName');
 
-    this.db = null;
-    this.connection = null;
+    this.cnx = cnx || null;
     this.tableName = tableName;
 
     // Formatters
@@ -51,13 +50,20 @@ module.exports = class MassiveCollection {
       find: null
     };
 
-    if(typeof connection !== "undefined") {
-      this.connection = connection;
-      this.db = this.connection[this.tableName];
-    }
-
     // Add it in collections
     __collections[this.tableName] = this;
+  }
+
+  /**
+   * @entry db
+   * @type Getter
+   * 
+   * Return massive object dynamically 
+   * 
+   * @return {Object}
+   */
+  get db() {
+    return this.cnx[this.tableName];
   }
 
   /**
@@ -80,16 +86,16 @@ module.exports = class MassiveCollection {
   }
 
   /**
-   * @entry setConnection
+   * @entry setcnx
    * @type Method
    *
-   * Set connection to db after instanciation
+   * Set cnx to db after instanciation
    *
-   * @param {Object} connection
+   * @param {Object} cnx
    */
-  setConnection(connection) {
-    this.connection = connection;
-    this.db = this.connection[this.tableName];
+  setcnx(cnx) {
+    this.cnx = cnx;
+    this.db = this.cnx[this.tableName];
   }
 
   /**
@@ -334,7 +340,7 @@ module.exports = class MassiveCollection {
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        this.connection.run('TRUNCATE ' + this.tableName)
+        this.cnx.run('TRUNCATE ' + this.tableName)
           .then((res) => {
             if (!!this.post.flush)
               this.post.flush(res);
@@ -597,7 +603,7 @@ module.exports = class MassiveCollection {
             customQuery += " OFFSET " + options.offset;
         }
 
-        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.connection.run(customQuery)
+        let query = (searchType === "normal") ? this.db.find(conditions, options) : this.cnx.run(customQuery)
 
         query
           .then((res) => {
