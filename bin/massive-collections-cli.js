@@ -184,6 +184,7 @@ function createTable(tableName, columns) {
       throw new Error('Bad column format : ' + columns[i]);
 
     switch(column.length) {
+      // Name, Type
       case 2 :
         var [name, type] = column;
 
@@ -192,6 +193,7 @@ function createTable(tableName, columns) {
         cols.push(`${name} ${type}`);
       break;
 
+      // Name, Type, Index
       case 3 :
         var [name, type, index] = column;
 
@@ -201,6 +203,7 @@ function createTable(tableName, columns) {
         cols.push(`${name} ${type}${index}`);
       break;
 
+      // Name, Type, Index, Nullable
       case 4 :
         var [name, type, index, nullable] = column;
 
@@ -211,6 +214,7 @@ function createTable(tableName, columns) {
         cols.push(`${name} ${type}${index}${nullable}`);
       break;
 
+      // Name, Type, Index, Nullable, Default
       case 5 :
         var [name, type, index, nullable, def] = column;
 
@@ -304,5 +308,3 @@ module.exports = {
   createTable,
   runQuery
 };
-
-// console.log(argv);

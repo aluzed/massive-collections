@@ -1,11 +1,10 @@
 {
   "name": "massive-collections",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "The easiest collections handler for massive-js",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "watch": "jest --watch"
+    "test": "./node_modules/.bin/_mocha ./tests"
   },
   "keywords": [
     "massive-js",
@@ -25,7 +24,8 @@
     "massive": "^4.6.3"
   },
   "devDependencies": {
-    "jest-cli": "^22.1.4"
+    "chai": "^4.1.2",
+    "mocha": "^5.0.0"
   },
   "jest": {
     "testEnvironment": "node"
