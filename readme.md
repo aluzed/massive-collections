@@ -42,6 +42,7 @@ module.exports = (db) => {
 Now you can use following methods :
 
 * get (id)
+* count
 * find
 * insert
 * update
@@ -49,6 +50,18 @@ Now you can use following methods :
 * flush
 
 Each method returns a Promise.
+
+### Count method
+
+Count database row
+
+```javascript
+
+  Users.count().then(res => {
+    console.log(res);
+  });
+
+```
 
 ### Get method
 
@@ -201,6 +214,7 @@ UsersCollection.postHook('update', function (data) {
 
 ### List of Hooks
 
+* pre->count(next)
 * pre->get(next)
 * pre->find(next)
 * pre->flush(next)
@@ -208,6 +222,7 @@ UsersCollection.postHook('update', function (data) {
 * pre->update(next, data)
 * pre->remove(next)
 * post->get(data)
+* post->count(data)
 * post->find(data)
 * post->flush(data)
 * post->insert(data)
@@ -284,14 +299,14 @@ UsersCollection.find({}, {
   }]
 }).then(res => console.log(res));
 ```
-## CLI 
+## CLI
 
 You can create table from a terminal with massive-collections-cli. Let's assume that you already have a connection to a postgresql database (user, password, etc.).
 
-You need to connect first (in a terminal) : 
+You need to connect first (in a terminal) :
 
 ```
-node_modules/.bin/massive-collection-cli connect --h=localhost:5432 --db=test_db --u=root --p=root
+node_modules/.bin/massive-collections-cli connect --h=localhost:5432 --db=test_db --u=root --p=root
 ```
 
 Once you are connected, you generate automatically a new file : `massive-collections_credentials.json` that should automatically be added to your .gitignore.

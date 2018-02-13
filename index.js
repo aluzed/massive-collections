@@ -10,6 +10,105 @@ const { InvalidFormat, CannotBeEmpty } = require('./errors');
 const Promise = require('bluebird');
 let __collections = {};
 
+function ParseConditions(cnds) {
+  let where = [];
+
+  for(let field in cnds) {
+    let currentCondition = "";
+    let matched = false;
+
+    if(field.match(/\s+>$/)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " > " + cnds[field];
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    if(field.match(/\s+<$/)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " < " + cnds[field];
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    if(field.match(/\s+<=$/)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " <= " + cnds[field];
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    if(field.match(/\s+>=$/)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " >= " + cnds[field];
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // Not in
+  if(field.match(/\s+(\<\>)$/) || field.match(/NOT\s+IN$/i)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " NOT IN " + JSON.stringify(cnds[field]);
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // Is not
+    if(field.match(/\s+\!=$/) || field.match(/\s+\!$/) || field.match(/\s+IS\s+NOT$/i)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " NOT " + JSON.stringify(cnds[field]).replace('[', '(').replace(']', ')');
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // In (only one space and 'in' or cnds[field] is an array)
+    if(currentCondition === "" && typeof cnds[field].splice === "function" || (field.match(/\s/g) || []).length === 1 && field.match(/IN$/i)) {
+      currentCondition = field + " IN " + JSON.stringify(cnds[field]).replace('[', '(').replace(']', ')');
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // LIKE (one space and 'like' or '... ~~')
+    if((field.match(/\s/g) || []).length === 1 && field.match(/\s+(LIKE)$/i) || field.match(/\s+~~$/)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " LIKE '" + cnds[field] + "'";
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // NOT LIKE
+    if(field.match(/\s+(NOT)\s+(LIKE)$/i) || field.match(/\s+\!~~$/)) {
+      currentCondition = field.split(' ')[0];
+      currentCondition += " NOT LIKE '" + cnds[field] + "'";
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // CASE INSENSITIVE
+    // ILIKE (one space and 'ilike')
+    if(field.match(/\s+(ILIKE)$/i) && (field.match(/\s/g) || []).length === 1) {
+      currentCondition = "LOWER(" + field.split(' ')[0] + ")";
+      currentCondition += " LIKE LOWER('" + cnds[field] + "')";
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    // NOT LIKE
+    if(field.match(/\s+(NOT)\s+(ILIKE)$/i)) {
+      currentCondition = "LOWER(" + field.split(' ')[0] + ")";
+      currentCondition += " NOT LIKE LOWER('" + cnds[field] + "')";
+      where.push(currentCondition);
+      matched = true;
+    }
+
+    if(!matched) {
+      where.push(field + " = '" + cnds[field] + "'");
+    }
+  }
+
+  return where;
+}
+
 module.exports = class MassiveCollection {
   /**
    * @entry Collection
@@ -34,6 +133,7 @@ module.exports = class MassiveCollection {
     // Hooks
     this.pre = {
       get: null,
+      count: null,
       flush: null,
       insert: null,
       update: null,
@@ -43,6 +143,7 @@ module.exports = class MassiveCollection {
 
     this.post = {
       get: null,
+      count: null,
       flush: null,
       insert: null,
       update: null,
@@ -57,9 +158,9 @@ module.exports = class MassiveCollection {
   /**
    * @entry db
    * @type Getter
-   * 
-   * Return massive object dynamically 
-   * 
+   *
+   * Return massive object dynamically
+   *
    * @return {Object}
    */
   get db() {
@@ -398,6 +499,69 @@ module.exports = class MassiveCollection {
   }
 
   /**
+   * @entry count
+   * @type Method
+   *
+   * Count items into our database
+   *
+   */
+  count(conditions) {
+    if(typeof conditions === "undefined")
+      conditions = {};
+
+    return new Promise((resolve, reject) => {
+      if(!!this.pre.count)
+        this.pre.count(resolve);
+      else
+        resolve();
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        let or = [];
+        if(typeof conditions['or'] !== "undefined") {
+          for(let o in conditions['or']) {
+
+            let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
+            if(newCond !== "")
+              or.push(newCond);
+          }
+        }
+        else {
+          let newCond = ParseConditions(conditions).join(' AND ');
+          if(newCond !== "")
+            or.push(newCond);
+        }
+
+        let newQuery = 'SELECT count(id) FROM ' + this.tableName;
+
+        if(or.length > 0)
+          newQuery += ' WHERE ' + or.join(' OR ');
+
+        this.cnx.run(newQuery).then(res => {
+          // res is an array, we must convert it
+          if(res.length > 0)
+            res = res[0];
+
+          if(!res.count)
+            throw new Error('Error, count is missing');
+
+          // Convert string to number
+          res.count = parseInt(res.count, 10);
+
+          if(!!this.post.count)
+            this.post.count(res.count);
+
+          resolve(res.count);
+        })
+        .catch(err => {
+          reject(err);
+        })
+      })
+    })
+
+  }
+
+  /**
    * @entry find
    * @type Method
    *
@@ -452,106 +616,6 @@ module.exports = class MassiveCollection {
               searchType = "jsonb";
             }
           }
-        }
-
-        function ParseConditions(cnds) {
-          let where = [];
-
-          for(let field in cnds) {
-            let currentCondition = "";
-            let matched = false;
-
-            if(field.match(/\s+>$/)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " > " + cnds[field];
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            if(field.match(/\s+<$/)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " < " + cnds[field];
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            if(field.match(/\s+<=$/)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " <= " + cnds[field];
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            if(field.match(/\s+>=$/)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " >= " + cnds[field];
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // Not in
-          if(field.match(/\s+(\<\>)$/) || field.match(/NOT\s+IN$/i)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " NOT IN " + JSON.stringify(cnds[field]);
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // Is not
-            if(field.match(/\s+\!=$/) || field.match(/\s+\!$/) || field.match(/\s+IS\s+NOT$/i)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " NOT " + JSON.stringify(cnds[field]).replace('[', '(').replace(']', ')');
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // In (only one space and 'in' or cnds[field] is an array)
-            if(currentCondition === "" && typeof cnds[field].splice === "function" || (field.match(/\s/g) || []).length === 1 && field.match(/IN$/i)) {
-              currentCondition = field + " IN " + JSON.stringify(cnds[field]).replace('[', '(').replace(']', ')');
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // LIKE (one space and 'like' or '... ~~')
-            if((field.match(/\s/g) || []).length === 1 && field.match(/\s+(LIKE)$/i) || field.match(/\s+~~$/)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " LIKE '" + cnds[field] + "'";
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // NOT LIKE
-            if(field.match(/\s+(NOT)\s+(LIKE)$/i) || field.match(/\s+\!~~$/)) {
-              currentCondition = field.split(' ')[0];
-              currentCondition += " NOT LIKE '" + cnds[field] + "'";
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // CASE INSENSITIVE
-
-            // ILIKE (one space and 'ilike')
-            if(field.match(/\s+(ILIKE)$/i) && (field.match(/\s/g) || []).length === 1) {
-              currentCondition = "LOWER(" + field.split(' ')[0] + ")";
-              currentCondition += " LIKE LOWER('" + cnds[field] + "')";
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            // NOT LIKE
-            if(field.match(/\s+(NOT)\s+(ILIKE)$/i)) {
-              currentCondition = "LOWER(" + field.split(' ')[0] + ")";
-              currentCondition += " NOT LIKE LOWER('" + cnds[field] + "')";
-              where.push(currentCondition);
-              matched = true;
-            }
-
-            if(!matched) {
-              where.push(field + " = '" + cnds[field] + "'");
-            }
-          }
-
-          return where;
         }
 
         if(searchType === "jsonb") {

@@ -21,7 +21,8 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "color-log": "^0.0.2",
-    "massive": "^4.6.3"
+    "massive": "^4.6.3",
+    "minimist": "^1.2.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
