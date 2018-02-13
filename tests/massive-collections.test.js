@@ -46,7 +46,6 @@ describe('Massive-Collections tests', () => {
       username: 'John Doe',
       password: 'qwerty'
     }).then(() => {
-
       FakeTable.find({}).then(res => {
         expect(res.length).to.equal(1);
 
@@ -110,6 +109,18 @@ describe('Massive-Collections tests', () => {
       'username ILIKE': 'jo%'
     }).then(result => {
       expect(result).to.equal(2);
+      done();
+    })
+  })
+
+  it('Should update a row', done => {
+    FakeTable.update(tmpId, {
+      password: 'taratatouille'
+    }).then(user => {
+      expect(user).to.deep.include({
+        username: 'John Doe',
+        password: 'taratatouille'
+      })
       done();
     })
   })

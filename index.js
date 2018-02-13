@@ -365,17 +365,20 @@ module.exports = class MassiveCollection {
       return new Promise((resolve, reject) => {
         this.db.update({ id }, data)
           .then((res) => {
-          if (!!this.toJS)
-            res.map(r => this.toJS(r));
+            if(res.length > 0)
+              res = res[0];
 
-          if (!!this.post.update)
-            this.post.update(res);
+            if (!!this.toJS)
+              res.map(r => this.toJS(r));
 
-          resolve(res);
-        })
-        .catch(err => {
-          reject(err);
-        })
+            if (!!this.post.update)
+              this.post.update(res);
+
+            resolve(res);
+          })
+          .catch(err => {
+            reject(err);
+          })
       });
     });
   }
@@ -407,6 +410,9 @@ module.exports = class MassiveCollection {
       return new Promise((resolve, reject) => {
         this.db.destroy({ id })
           .then((res) => {
+            if(res.length > 0)
+              res = res[0];
+
             if (!!this.toJS)
               res.map(r => this.toJS(r));
 
@@ -442,11 +448,11 @@ module.exports = class MassiveCollection {
     .then(() => {
       return new Promise((resolve, reject) => {
         this.cnx.run('TRUNCATE ' + this.tableName)
-          .then((res) => {
+          .then(() => {
             if (!!this.post.flush)
-              this.post.flush(res);
+              this.post.flush();
 
-            resolve(res);
+            resolve();
           })
           .catch(err => {
             reject(err);
