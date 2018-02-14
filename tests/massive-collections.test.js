@@ -20,6 +20,7 @@ describe('Massive-Collections tests', () => {
     })
   })
 
+  // create table then flush method
   it('Should create a fake table in our database', done => {
     const fakeTableQuery = fs.readFileSync(path.join(__dirname, 'faketable.sql'), 'utf8');
     processDB.query(fakeTableQuery).then(() => {
@@ -41,6 +42,7 @@ describe('Massive-Collections tests', () => {
     });
   });
 
+  // insert method
   it('Should insert data', done => {
     FakeTable.insert({
       username: 'John Doe',
@@ -60,6 +62,7 @@ describe('Massive-Collections tests', () => {
     });
   });
 
+  // get method
   it('Should get a specific item from its ID', (done) => {
     FakeTable.get(tmpId).then(row => {
 
@@ -73,6 +76,7 @@ describe('Massive-Collections tests', () => {
     })
   });
 
+  // count method
   it('Should count results', done => {
     // Save 3 items
     Promise.all(
@@ -104,6 +108,7 @@ describe('Massive-Collections tests', () => {
     })
   });
 
+  // count method with conditions
   it('Should count only where username contains "jo"', done => {
     FakeTable.count({
       'username ILIKE': 'jo%'
@@ -113,6 +118,7 @@ describe('Massive-Collections tests', () => {
     })
   })
 
+  // update method
   it('Should update a row', done => {
     FakeTable.update(tmpId, {
       password: 'taratatouille'
@@ -123,8 +129,33 @@ describe('Massive-Collections tests', () => {
       })
       done();
     })
-  })
+  });
 
+  // updateAll method
+  it('Should update multiple rows', done => {
+    FakeTable.updateAll({
+      'username ilike': 'j%'
+    }, {
+      password: 'blablabla'
+    }).then(users => {
+      // Check if users have been correctly updated
+      expect(users.find(u => u.username === 'John Doe')).to.deep.include({
+        username: 'John Doe',
+        password: 'blablabla'
+      });
+      expect(users.find(u => u.username === 'Jane Doe')).to.deep.include({
+        username: 'Jane Doe',
+        password: 'blablabla'
+      });
+      expect(users.find(u => u.username === 'Johnny Doe')).to.deep.include({
+        username: 'Johnny Doe',
+        password: 'blablabla'
+      });
+      done();
+    });
+  });
+
+  // remove method
   it('Should remove a row', done => {
     FakeTable.remove(tmpId).then(() => {
       // Check if table count is now 3
@@ -135,7 +166,7 @@ describe('Massive-Collections tests', () => {
     })
   })
 
-  // Clear data before exiting
+  // flush method, clear data before exiting
   it('Should clean data', done => {
     FakeTable.flush().then(() => {
       FakeTable.find({}).then(res => {

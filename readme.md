@@ -160,6 +160,31 @@ Returns: {Object} (updated row)
 
 ```
 
+### UpdateAll method
+
+Purpose: Update any rows where conditions match
+
+Returns: {Array} (updated rows)
+
+| Parameter  | Type   | Description      | Example                                                        |
+|:-----------|:-------|:-----------------|:---------------------------------------------------------------|
+| conditions | Object | WHERE conditions | { "name ~~": "jo%"  }  // name like                            |
+| data       | Object | new data to set  | { name: "bobby" }                                              |
+
+`Collection.updateAll(conditions, data)`
+
+```javascript
+
+  UsersCollection.updateAll({
+    'name ilike': 't%' // Find all name starting with t non case sensitive
+  }, {
+    age: 20 // Set age = 20
+  }).then(res => {
+    console.log(res);
+  });
+
+```
+
 ### Remove method
 
 Purpose: Remove a row where id = ...

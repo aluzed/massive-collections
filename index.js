@@ -433,23 +433,62 @@ module.exports = class MassiveCollection {
         }
 
         let newQuery = 'UPDATE ' + this.tableName + ' SET ';
+        let findQuery = 'SELECT * FROM ' + this.tableName;
 
         // Set fields
         Object.keys(data).map(field => {
-          newQuery += field + ' = ' + data[field] + ',';
+          newQuery += field + ' = ';
+
+          if(!isNaN(data[field])) {
+            newQuery += data[field] + ',';
+          }
+          else {
+            newQuery += "'" + data[field] + "',";
+          }
         });
 
         // Remove last ','
         newQuery = newQuery.substring(0, newQuery.length - 1);
 
-        if(or.length > 0)
+        if(or.length > 0) {
           newQuery += ' WHERE ' + or.join(' OR ');
+          findQuery += ' WHERE ' + or.join(' OR ');
+        }
 
-        this.cnx.run(newQuery).then(res => {
-          if(!!this.post.updateAll)
-            this.post.count(res.updateAll);
+        let ids = [];
 
-          resolve(res.count);
+        // Find rows to update
+        this.cnx.run(findQuery).then(res => {
+          res.map(row => {
+            // Add id to ids list
+            ids.push(row.id);
+          });
+
+          // Check if found,
+          // If there is no data to update, return empty array
+          if(ids.length > 0) {
+            // Update rows
+            this.cnx.run(newQuery).then(() => {
+              let selectQuery = 'SELECT * FROM ' + this.tableName + ' WHERE id IN (' + ids.join(',') + ')';
+
+              // Get updated rows
+              this.cnx.run(selectQuery).then(res => {
+                if(!!this.post.updateAll)
+                this.post.updateAll(res);
+
+                resolve(res);
+              })
+            })
+          }
+          // No data found
+          else {
+            let data = [];
+
+            if(!!this.post.updateAll)
+            this.post.updateAll(data);
+
+            resolve(data);
+          }
         })
         .catch(err => {
           reject(err);
