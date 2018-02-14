@@ -1,0 +1,31 @@
+# v1.1.7
+
+- Collection.count method
+
+================================================================================
+
+# v1.1.6
+
+- Working CLI
+- Collection.get method
+
+================================================================================
+
+# Older
+
+- Collections features :
+
+  * find
+  * insert
+  * update
+  * remove
+
+- Hooks :
+
+  * pre
+  * post
+
+- Formatters :
+
+  * toJS
+  * toDB

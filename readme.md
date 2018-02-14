@@ -42,6 +42,7 @@ module.exports = (db) => {
 Now you can use following methods :
 
 * get (id)
+* count
 * find
 * insert
 * update
@@ -50,7 +51,31 @@ Now you can use following methods :
 
 Each method returns a Promise.
 
+### Count method
+
+Purpose: Count database row.
+
+Returns: {Number}
+
+| Parameter  | Type   | Description                               | Example                                                                                   |
+|:-----------|:-------|:------------------------------------------|:------------------------------------------------------------------------------------------|
+| conditions | Object | WHERE conditions                          | { "name ~~": "jo%"  }  // name like                                                       |
+
+`Collection.count(conditions)`
+
+```javascript
+
+  Users.count().then(res => {
+    console.log(res);
+  });
+
+```
+
 ### Get method
+
+Purpose: Get a specific row.
+
+Returns: {Object}
 
 | Parameter  | Type   | Description      | Example  |
 |:-----------|:-------|:-----------------|:---------|
@@ -68,6 +93,10 @@ Each method returns a Promise.
 
 ### Find method
 
+Purpose: Get an array of rows.
+
+Returns: {Array}
+
 | Parameter  | Type   | Description                               | Example                                                                                   |
 |:-----------|:-------|:------------------------------------------|:------------------------------------------------------------------------------------------|
 | conditions | Object | WHERE conditions                          | { "name ~~": "jo%"  }  // name like                                                       |
@@ -84,6 +113,10 @@ Each method returns a Promise.
 ```
 
 ### Insert method
+
+Purpose: Insert an new row in our table.
+
+Returns: {Object}
 
 | Parameter  | Type   | Description      | Example                                                        |
 |:-----------|:-------|:-----------------|:---------------------------------------------------------------|
@@ -106,6 +139,10 @@ Each method returns a Promise.
 
 ### Update method
 
+Purpose: Update a row where id = ...
+
+Returns: {Object} (updated row)
+
 | Parameter  | Type   | Description      | Example                                                        |
 |:-----------|:-------|:-----------------|:---------------------------------------------------------------|
 | id         | Number | id of the item   | 3                                                              |
@@ -124,6 +161,10 @@ Each method returns a Promise.
 ```
 
 ### Remove method
+
+Purpose: Remove a row where id = ...
+
+Returns: {Object} (deleted item)
 
 | Parameter  | Type   | Description      | Example     |
 |:-----------|:-------|:-----------------|:------------|
@@ -201,6 +242,7 @@ UsersCollection.postHook('update', function (data) {
 
 ### List of Hooks
 
+* pre->count(next)
 * pre->get(next)
 * pre->find(next)
 * pre->flush(next)
@@ -208,8 +250,9 @@ UsersCollection.postHook('update', function (data) {
 * pre->update(next, data)
 * pre->remove(next)
 * post->get(data)
+* post->count(data)
 * post->find(data)
-* post->flush(data)
+* post->flush()
 * post->insert(data)
 * post->update(data)
 * post->remove(data)
@@ -284,14 +327,14 @@ UsersCollection.find({}, {
   }]
 }).then(res => console.log(res));
 ```
-## CLI 
+## CLI
 
 You can create table from a terminal with massive-collections-cli. Let's assume that you already have a connection to a postgresql database (user, password, etc.).
 
-You need to connect first (in a terminal) : 
+You need to connect first (in a terminal) :
 
 ```
-node_modules/.bin/massive-collection-cli connect --h=localhost:5432 --db=test_db --u=root --p=root
+node_modules/.bin/massive-collections-cli connect --h=localhost:5432 --db=test_db --u=root --p=root
 ```
 
 Once you are connected, you generate automatically a new file : `massive-collections_credentials.json` that should automatically be added to your .gitignore.
