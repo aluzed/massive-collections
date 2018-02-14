@@ -46,6 +46,7 @@ Now you can use following methods :
 * find
 * insert
 * update
+* updateAll
 * remove
 * flush
 
@@ -136,6 +137,27 @@ Count database row
 
 ```
 
+### UpdateAll method
+
+| Parameter  | Type   | Description      | Example                                                        |
+|:-----------|:-------|:-----------------|:---------------------------------------------------------------|
+| conditions | Object | WHERE conditions | { "name ~~": "jo%"  }  // name like                            |
+| data       | Object | new data to set  | { name: "bobby" }                                              |
+
+`Collection.updateAll(conditions, data)`
+
+```javascript
+
+  UsersCollection.updateAll({
+    'name ilike': 't%' // Find all name starting with t non case sensitive
+  }, {
+    age: 20 // Set age = 20
+  }).then(res => {
+    console.log(res);
+  });
+
+```
+
 ### Remove method
 
 | Parameter  | Type   | Description      | Example     |
@@ -220,6 +242,7 @@ UsersCollection.postHook('update', function (data) {
 * pre->flush(next)
 * pre->insert(next, data)
 * pre->update(next, data)
+* pre->updateAll(next, data)
 * pre->remove(next)
 * post->get(data)
 * post->count(data)
@@ -227,6 +250,7 @@ UsersCollection.postHook('update', function (data) {
 * post->flush(data)
 * post->insert(data)
 * post->update(data)
+* post->updateAll(data)
 * post->remove(data)
 
 For Pre Insert and Pre Update, you must pass `data` through the `next` callback.
