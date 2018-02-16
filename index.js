@@ -139,6 +139,7 @@ module.exports = class MassiveCollection {
       update: null,
       updateAll: null,
       remove: null,
+      removeAll: null,
       find: null
     };
 
@@ -150,6 +151,7 @@ module.exports = class MassiveCollection {
       update: null,
       updateAll: null,
       remove: null,
+      removeAll: null,
       find: null
     };
 
