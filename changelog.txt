@@ -1,6 +1,14 @@
+# v1.1.9
+
+- Collection.removeAll method
+- Hook pre/post removeAll
+
+================================================================================
+
 # v1.1.8
 
 - Collection.updateAll method
+- Hook pre/post updateAll
 
 ================================================================================
 

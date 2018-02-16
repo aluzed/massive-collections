@@ -92,6 +92,10 @@ describe('Massive-Collections tests', () => {
         {
           username: 'Johnny Doe',
           password: 'wuwu123'
+        },
+        {
+          username: 'Johnas Doe',
+          password: 'babacool'
         }
       ].map(u => {
         return new Promise((resolve, reject) => {
@@ -102,7 +106,7 @@ describe('Massive-Collections tests', () => {
       })
     ).then(() => {
       FakeTable.count().then(result => {
-        expect(result).to.equal(4);
+        expect(result).to.equal(5);
         done();
       });
     })
@@ -113,7 +117,7 @@ describe('Massive-Collections tests', () => {
     FakeTable.count({
       'username ILIKE': 'jo%'
     }).then(result => {
-      expect(result).to.equal(2);
+      expect(result).to.equal(3);
       done();
     })
   })
@@ -160,8 +164,25 @@ describe('Massive-Collections tests', () => {
     FakeTable.remove(tmpId).then(() => {
       // Check if table count is now 3
       FakeTable.count().then(result => {
-        expect(result).to.equal(3);
+        expect(result).to.equal(4);
         done();
+      })
+    })
+  })
+
+  // removeAll method
+  it('Should removeAll John% users', done => {
+    FakeTable.insert({
+      username: 'John Doe',
+      password: 'qwerty'
+    }).then(() => {
+      FakeTable.removeAll({
+        'username ilike': 'john%'
+      }).then(() => {
+        FakeTable.find().then(users => {
+          expect(users.length).to.equal(2);
+          done();
+        });
       })
     })
   })

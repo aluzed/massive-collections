@@ -543,6 +543,94 @@ module.exports = class MassiveCollection {
   }
 
   /**
+   * @entry removeAll
+   * @type Method
+   *
+   * Remove multiple rows where conditions are true
+   *
+   * @param {Object} conditions
+   * @constraint conditions must be type of object
+   * @constraint conditions must contain at least 1 key
+   * @returns {Promise}
+   * @throws {InvalidFormat}
+   */
+  removeAll(conditions) {
+    if (typeof conditions !== "object")
+      throw new InvalidFormat('conditions');
+
+    if(Object.keys(conditions).length < 1)
+      throw new Error('Conditions must count at least 1 element');
+
+    return new Promise((resolve, reject) => {
+      if (!!this.pre.removeAll) {
+        this.pre.removeAll(resolve);
+      }
+      else {
+        resolve();
+      }
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        let or = [];
+
+        if(typeof conditions['or'] !== "undefined") {
+          for(let o in conditions['or']) {
+
+            let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
+            if(newCond !== "")
+              or.push(newCond);
+          }
+        }
+        else {
+          let newCond = ParseConditions(conditions).join(' AND ');
+          if(newCond !== "")
+            or.push(newCond);
+        }
+
+        let newQuery = 'DELETE FROM ' + this.tableName;
+        let findQuery = 'SELECT * FROM ' + this.tableName;
+
+        if(or.length > 0) {
+          findQuery += ' WHERE ' + or.join(' OR ');
+        }
+
+        let ids = [];
+
+        // Find rows to update
+        this.cnx.run(findQuery)
+          .then(res => {
+
+            res.map(r => {
+              ids.push(r.id);
+            });
+
+            newQuery += ' WHERE id in (' + ids.join(',') + ')';
+
+            if(ids.length > 0) {
+              this.cnx.run(newQuery)
+                .then(() => {
+                  if (!!this.toJS)
+                    res.map(r => this.toJS(r));
+
+                  if (!!this.post.removeAll)
+                    this.post.removeAll(res);
+
+                  // Return deleted results
+                  resolve(res);
+                });
+            }
+            else {
+              resolve([]);
+            }
+          })
+          .catch(err => {
+            reject(err);
+          })
+      });
+    });
+  }
+
+  /**
    * @entry flush
    * @type Method
    *
