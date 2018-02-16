@@ -48,6 +48,7 @@ Now you can use following methods :
 * update
 * updateAll
 * remove
+* removeAll
 * flush
 
 Each method returns a Promise.
@@ -163,13 +164,10 @@ Returns: {Object} (updated row)
 
 ### UpdateAll method
 
-<<<<<<< HEAD
-=======
 Purpose: Update any rows where conditions match
 
 Returns: {Array} (updated rows)
 
->>>>>>> master
 | Parameter  | Type   | Description      | Example                                                        |
 |:-----------|:-------|:-----------------|:---------------------------------------------------------------|
 | conditions | Object | WHERE conditions | { "name ~~": "jo%"  }  // name like                            |
@@ -204,6 +202,28 @@ Returns: {Object} (deleted item)
 ```javascript
 
   UsersCollection.remove(5).then(res => {
+    console.log(res);
+  });
+
+```
+
+### RemoveAll method
+
+Purpose: Remove any rows that match conditions
+
+Returns: {Array} (deleted items)
+
+| Parameter  | Type   | Description      | Example                             |
+|:-----------|:-------|:-----------------|:------------------------------------|
+| conditions | Object | WHERE conditions | { "name ~~": "jo%"  }  // name like |
+
+`Collection.removeAll(id)`
+
+```javascript
+
+  UsersCollection.removeAll({
+    'username ilike': 'jo%'
+  }).then(res => {
     console.log(res);
   });
 
