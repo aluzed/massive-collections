@@ -176,9 +176,10 @@ describe('Massive-Collections tests', () => {
       username: 'John Doe',
       password: 'qwerty'
     }).then(() => {
+      // Should remove John, Johnny and Johnas
       FakeTable.removeAll({
         'username ilike': 'john%'
-      }).then(() => {
+      }).then(users => {
         FakeTable.find().then(users => {
           expect(users.length).to.equal(2);
           done();
