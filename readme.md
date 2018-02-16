@@ -54,7 +54,15 @@ Each method returns a Promise.
 
 ### Count method
 
-Count database row
+Purpose: Count database row.
+
+Returns: {Number}
+
+| Parameter  | Type   | Description                               | Example                                                                                   |
+|:-----------|:-------|:------------------------------------------|:------------------------------------------------------------------------------------------|
+| conditions | Object | WHERE conditions                          | { "name ~~": "jo%"  }  // name like                                                       |
+
+`Collection.count(conditions)`
 
 ```javascript
 
@@ -65,6 +73,10 @@ Count database row
 ```
 
 ### Get method
+
+Purpose: Get a specific row.
+
+Returns: {Object}
 
 | Parameter  | Type   | Description      | Example  |
 |:-----------|:-------|:-----------------|:---------|
@@ -82,6 +94,10 @@ Count database row
 
 ### Find method
 
+Purpose: Get an array of rows.
+
+Returns: {Array}
+
 | Parameter  | Type   | Description                               | Example                                                                                   |
 |:-----------|:-------|:------------------------------------------|:------------------------------------------------------------------------------------------|
 | conditions | Object | WHERE conditions                          | { "name ~~": "jo%"  }  // name like                                                       |
@@ -98,6 +114,10 @@ Count database row
 ```
 
 ### Insert method
+
+Purpose: Insert an new row in our table.
+
+Returns: {Object}
 
 | Parameter  | Type   | Description      | Example                                                        |
 |:-----------|:-------|:-----------------|:---------------------------------------------------------------|
@@ -120,6 +140,10 @@ Count database row
 
 ### Update method
 
+Purpose: Update a row where id = ...
+
+Returns: {Object} (updated row)
+
 | Parameter  | Type   | Description      | Example                                                        |
 |:-----------|:-------|:-----------------|:---------------------------------------------------------------|
 | id         | Number | id of the item   | 3                                                              |
@@ -139,6 +163,13 @@ Count database row
 
 ### UpdateAll method
 
+<<<<<<< HEAD
+=======
+Purpose: Update any rows where conditions match
+
+Returns: {Array} (updated rows)
+
+>>>>>>> master
 | Parameter  | Type   | Description      | Example                                                        |
 |:-----------|:-------|:-----------------|:---------------------------------------------------------------|
 | conditions | Object | WHERE conditions | { "name ~~": "jo%"  }  // name like                            |
@@ -159,6 +190,10 @@ Count database row
 ```
 
 ### Remove method
+
+Purpose: Remove a row where id = ...
+
+Returns: {Object} (deleted item)
 
 | Parameter  | Type   | Description      | Example     |
 |:-----------|:-------|:-----------------|:------------|
@@ -247,7 +282,7 @@ UsersCollection.postHook('update', function (data) {
 * post->get(data)
 * post->count(data)
 * post->find(data)
-* post->flush(data)
+* post->flush()
 * post->insert(data)
 * post->update(data)
 * post->updateAll(data)

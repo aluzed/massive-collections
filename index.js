@@ -139,6 +139,7 @@ module.exports = class MassiveCollection {
       update: null,
       updateAll: null,
       remove: null,
+      removeAll: null,
       find: null
     };
 
@@ -150,6 +151,7 @@ module.exports = class MassiveCollection {
       update: null,
       updateAll: null,
       remove: null,
+      removeAll: null,
       find: null
     };
 
@@ -367,19 +369,134 @@ module.exports = class MassiveCollection {
       return new Promise((resolve, reject) => {
         this.db.update({ id }, data)
           .then((res) => {
-          if (!!this.toJS)
-            res.map(r => this.toJS(r));
+            if(res.length > 0)
+              res = res[0];
 
-          if (!!this.post.update)
-            this.post.update(res);
+            if (!!this.toJS)
+              res.map(r => this.toJS(r));
 
-          resolve(res);
+            if (!!this.post.update)
+              this.post.update(res);
+
+            resolve(res);
+          })
+          .catch(err => {
+            reject(err);
+          })
+      });
+    });
+  }
+
+  /**
+   * @entry updateAll
+   * @type Method
+   *
+   * Update rows where conditions match
+   *
+   * @param {Object} conditions
+   * @param {Object} data
+   * @returns {Promise}
+   * @constraint data must be type of object
+   * @throws {CannotBeEmpty}
+   */
+  updateAll(conditions, data) {
+    if (typeof data !== "object")
+      throw new InvalidFormat('data');
+
+    if (Object.keys(data).length < 1)
+      throw new CannotBeEmpty('data');
+
+    if (!!this.toDB)
+      data = this.toDB(data);
+
+    return new Promise((resolve, reject) => {
+      if(!!this.pre.updateAll)
+        this.pre.updateAll(resolve, data);
+      else
+        resolve();
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+
+        let or = [];
+
+        if(typeof conditions['or'] !== "undefined") {
+          for(let o in conditions['or']) {
+
+            let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
+            if(newCond !== "")
+              or.push(newCond);
+          }
+        }
+        else {
+          let newCond = ParseConditions(conditions).join(' AND ');
+          if(newCond !== "")
+            or.push(newCond);
+        }
+
+        let newQuery = 'UPDATE ' + this.tableName + ' SET ';
+        let findQuery = 'SELECT * FROM ' + this.tableName;
+
+        // Set fields
+        Object.keys(data).map(field => {
+          newQuery += field + ' = ';
+
+          if(!isNaN(data[field])) {
+            newQuery += data[field] + ',';
+          }
+          else {
+            newQuery += "'" + data[field] + "',";
+          }
+        });
+
+        // Remove last ','
+        newQuery = newQuery.substring(0, newQuery.length - 1);
+
+        if(or.length > 0) {
+          newQuery += ' WHERE ' + or.join(' OR ');
+          findQuery += ' WHERE ' + or.join(' OR ');
+        }
+
+        let ids = [];
+
+        // Find rows to update
+        this.cnx.run(findQuery).then(res => {
+          res.map(row => {
+            // Add id to ids list
+            ids.push(row.id);
+          });
+
+          // Check if found,
+          // If there is no data to update, return empty array
+          if(ids.length > 0) {
+            // Update rows
+            this.cnx.run(newQuery).then(() => {
+              let selectQuery = 'SELECT * FROM ' + this.tableName + ' WHERE id IN (' + ids.join(',') + ')';
+
+              // Get updated rows
+              this.cnx.run(selectQuery).then(res => {
+                if(!!this.post.updateAll)
+                this.post.updateAll(res);
+
+                resolve(res);
+              })
+            })
+          }
+          // No data found
+          else {
+            let data = [];
+
+            if(!!this.post.updateAll)
+            this.post.updateAll(data);
+
+            resolve(data);
+          }
         })
         .catch(err => {
           reject(err);
         })
-      });
-    });
+      })
+    })
   }
 
   /**
@@ -482,6 +599,9 @@ module.exports = class MassiveCollection {
       return new Promise((resolve, reject) => {
         this.db.destroy({ id })
           .then((res) => {
+            if(res.length > 0)
+              res = res[0];
+
             if (!!this.toJS)
               res.map(r => this.toJS(r));
 
@@ -489,6 +609,94 @@ module.exports = class MassiveCollection {
               this.post.remove(res);
 
             resolve(res);
+          })
+          .catch(err => {
+            reject(err);
+          })
+      });
+    });
+  }
+
+  /**
+   * @entry removeAll
+   * @type Method
+   *
+   * Remove multiple rows where conditions are true
+   *
+   * @param {Object} conditions
+   * @constraint conditions must be type of object
+   * @constraint conditions must contain at least 1 key
+   * @returns {Promise}
+   * @throws {InvalidFormat}
+   */
+  removeAll(conditions) {
+    if (typeof conditions !== "object")
+      throw new InvalidFormat('conditions');
+
+    if(Object.keys(conditions).length < 1)
+      throw new Error('Conditions must count at least 1 element');
+
+    return new Promise((resolve, reject) => {
+      if (!!this.pre.removeAll) {
+        this.pre.removeAll(resolve);
+      }
+      else {
+        resolve();
+      }
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        let or = [];
+
+        if(typeof conditions['or'] !== "undefined") {
+          for(let o in conditions['or']) {
+
+            let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
+            if(newCond !== "")
+              or.push(newCond);
+          }
+        }
+        else {
+          let newCond = ParseConditions(conditions).join(' AND ');
+          if(newCond !== "")
+            or.push(newCond);
+        }
+
+        let newQuery = 'DELETE FROM ' + this.tableName;
+        let findQuery = 'SELECT * FROM ' + this.tableName;
+
+        if(or.length > 0) {
+          findQuery += ' WHERE ' + or.join(' OR ');
+        }
+
+        let ids = [];
+
+        // Find rows to update
+        this.cnx.run(findQuery)
+          .then(res => {
+
+            res.map(r => {
+              ids.push(r.id);
+            });
+
+            newQuery += ' WHERE id in (' + ids.join(',') + ')';
+
+            if(ids.length > 0) {
+              this.cnx.run(newQuery)
+                .then(() => {
+                  if (!!this.toJS)
+                    res.map(r => this.toJS(r));
+
+                  if (!!this.post.removeAll)
+                    this.post.removeAll(res);
+
+                  // Return deleted results
+                  resolve(res);
+                });
+            }
+            else {
+              resolve([]);
+            }
           })
           .catch(err => {
             reject(err);
@@ -517,11 +725,11 @@ module.exports = class MassiveCollection {
     .then(() => {
       return new Promise((resolve, reject) => {
         this.cnx.run('TRUNCATE ' + this.tableName)
-          .then((res) => {
+          .then(() => {
             if (!!this.post.flush)
-              this.post.flush(res);
+              this.post.flush();
 
-            resolve(res);
+            resolve();
           })
           .catch(err => {
             reject(err);
