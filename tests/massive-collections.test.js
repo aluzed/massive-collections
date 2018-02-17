@@ -188,6 +188,31 @@ describe('Massive-Collections tests', () => {
     })
   })
 
+  // Test preHook Insert
+  it('Should test preHook insert', done => {
+    FakeTable.preHook('insert', function (next, data) {
+      data.username = data.username.replace(/[\.\-\'\"]/g, '_');
+      data.password = data.password.replace(/\s/g, '');
+      let hex = "";
+      for(let i in data.password) {
+        hex += data.password.charCodeAt(i).toString(16) 
+      }
+      data.password = hex;
+      next(data);
+    });
+
+    FakeTable.insert({
+      username: 'Lord-Eddard.Stark',
+      password: 'please dont'
+    }).then(user => {
+      expect(user).to.deep.include({
+        username: 'Lord_Eddard_Stark',
+        password: '706c65617365646f6e74'
+      });
+      done();
+    })
+  })
+
   // flush method, clear data before exiting
   it('Should clean data', done => {
     FakeTable.flush().then(() => {
