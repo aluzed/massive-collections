@@ -759,13 +759,8 @@ module.exports = class MassiveCollection {
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        this.db.find({ id })
+        this.db.findOne(id)
           .then((res) => {
-            if(!res[0])
-              resolve(null);
-
-            res = res[0];
-
             if (!!this.toJS)
               res = this.toJS(res);
 
