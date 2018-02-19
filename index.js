@@ -314,19 +314,44 @@ module.exports = class MassiveCollection {
     })
     .then(data => {
       return new Promise((resolve, reject) => {
-        this.db.insert(data)
-          .then((res) => {
-            if(!!this.toJS)
-              res = this.toJS(res);
 
-            if(!!this.post.insert)
-              this.post.insert(res);
+      let getSeq = 'SELECT nextval(\'' + this.tableName+ '_id_seq\')';
+      this.cnx.run(getSeq)
+        .then(seq => {
+          if(seq.length > 0)
+            seq = seq[0];
 
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          })
+          const nextID = parseInt(seq.nextval, 10);
+
+          // Build our insert query
+          let query = 'INSERT INTO ' + this.tableName + ' ';
+          let fields = '(id,' + Object.keys(data).join(',') + ')';
+          query += fields + ' VALUES (' + nextID + ', ' + Object.keys(data).map(f => {
+            if(!isNaN(data[f]))
+              return data[f];
+            else
+              return "'" + data[f].replace(/\'/g, '\'') + "'";
+          }).join(',') + ')';
+
+          // Insert our new row
+          this.cnx.run(query)
+            .then(() => {
+              // Get our row
+              this.db.findOne(nextID)
+                .then(res => {
+                  if(!!this.toJS)
+                    res = this.toJS(res);
+
+                  if(!!this.post.insert)
+                    this.post.insert(res);
+
+                  resolve(res);
+                })
+            })
+        })
+        .catch(err => {
+          reject(err);
+        });
       });
     });
   }
@@ -460,7 +485,7 @@ module.exports = class MassiveCollection {
         }
 
         let ids = [];
-        
+
         // Find rows to update
         this.cnx.run(findQuery).then(res => {
           res.map(row => {

@@ -190,6 +190,7 @@ describe('Massive-Collections tests', () => {
 
   // Test preHook Insert
   it('Should test preHook insert', done => {
+
     FakeTable.preHook('insert', function (next, data) {
       data.username = data.username.replace(/[\.\-\'\"]/g, '_');
       data.password = data.password.replace(/\s/g, '');
