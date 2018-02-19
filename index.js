@@ -331,7 +331,7 @@ module.exports = class MassiveCollection {
               if(!isNaN(data[f]))
                 return data[f];
               else
-                return '(E\'' + data[f].replace(/\'/g, '\\\'') + '\')::text';
+                return '(E\'' + data[f].replace(/\'/g, '\\\'') + '\')';
             }).join(',') + ')';
 
           // Insert our new row
