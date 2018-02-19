@@ -176,14 +176,40 @@ describe('Massive-Collections tests', () => {
       username: 'John Doe',
       password: 'qwerty'
     }).then(() => {
+      // Should remove John, Johnny and Johnas
       FakeTable.removeAll({
         'username ilike': 'john%'
-      }).then(() => {
+      }).then(users => {
         FakeTable.find().then(users => {
           expect(users.length).to.equal(2);
           done();
         });
       })
+    })
+  })
+
+  // Test preHook Insert
+  it('Should test preHook insert', done => {
+    FakeTable.preHook('insert', function (next, data) {
+      data.username = data.username.replace(/[\.\-\'\"]/g, '_');
+      data.password = data.password.replace(/\s/g, '');
+      let hex = "";
+      for(let i in data.password) {
+        hex += data.password.charCodeAt(i).toString(16) 
+      }
+      data.password = hex;
+      next(data);
+    });
+
+    FakeTable.insert({
+      username: 'Lord-Eddard.Stark',
+      password: 'please dont'
+    }).then(user => {
+      expect(user).to.deep.include({
+        username: 'Lord_Eddard_Stark',
+        password: '706c65617365646f6e74'
+      });
+      done();
     })
   })
 

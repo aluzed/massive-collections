@@ -441,9 +441,11 @@ module.exports = class MassiveCollection {
         Object.keys(data).map(field => {
           newQuery += field + ' = ';
 
+          // If it is a number
           if(!isNaN(data[field])) {
             newQuery += data[field] + ',';
           }
+          // If it is a string, add quote
           else {
             newQuery += "'" + data[field] + "',";
           }
@@ -458,7 +460,7 @@ module.exports = class MassiveCollection {
         }
 
         let ids = [];
-
+        
         // Find rows to update
         this.cnx.run(findQuery).then(res => {
           res.map(row => {
@@ -491,79 +493,6 @@ module.exports = class MassiveCollection {
 
             resolve(data);
           }
-        })
-        .catch(err => {
-          reject(err);
-        })
-      })
-    })
-  }
-
-  /**
-   * @entry updateAll
-   * @type Method
-   *
-   * Update rows where conditions match
-   *
-   * @param {Object} conditions
-   * @param {Object} data
-   * @returns {Promise}
-   * @constraint data must be type of object
-   * @throws {CannotBeEmpty}
-   */
-  updateAll(conditions, data) {
-    if (typeof data !== "object")
-      throw new InvalidFormat('data');
-
-    if (Object.keys(data).length < 1)
-      throw new CannotBeEmpty('data');
-
-    if (!!this.toDB)
-      data = this.toDB(data);
-
-    return new Promise((resolve, reject) => {
-      if(!!this.pre.updateAll)
-        this.pre.updateAll(resolve, data);
-      else
-        resolve();
-    })
-    .then(() => {
-      return new Promise((resolve, reject) => {
-
-        let or = [];
-
-        if(typeof conditions['or'] !== "undefined") {
-          for(let o in conditions['or']) {
-
-            let newCond = ParseConditions(conditions['or'][o]).join(' AND ');
-            if(newCond !== "")
-              or.push(newCond);
-          }
-        }
-        else {
-          let newCond = ParseConditions(conditions).join(' AND ');
-          if(newCond !== "")
-            or.push(newCond);
-        }
-
-        let newQuery = 'UPDATE ' + this.tableName + ' SET ';
-
-        // Set fields
-        Object.keys(data).map(field => {
-          newQuery += field + ' = ' + data[field] + ',';
-        });
-
-        // Remove last ','
-        newQuery = newQuery.substring(0, newQuery.length - 1);
-
-        if(or.length > 0)
-          newQuery += ' WHERE ' + or.join(' OR ');
-
-        this.cnx.run(newQuery).then(res => {
-          if(!!this.post.updateAll)
-            this.post.count(res.updateAll);
-
-          resolve(res.count);
         })
         .catch(err => {
           reject(err);
