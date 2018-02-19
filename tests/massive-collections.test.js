@@ -203,11 +203,11 @@ describe('Massive-Collections tests', () => {
     });
 
     FakeTable.insert({
-      username: 'Lord-Eddard.Stark',
+      username: "Lord-Eddard.Stark'Ao",
       password: 'please dont'
     }).then(user => {
       expect(user).to.deep.include({
-        username: 'Lord_Eddard_Stark',
+        username: 'Lord_Eddard_Stark_Ao',
         password: '706c65617365646f6e74'
       });
       done();

@@ -326,12 +326,13 @@ module.exports = class MassiveCollection {
           // Build our insert query
           let query = 'INSERT INTO ' + this.tableName + ' ';
           let fields = '(id,' + Object.keys(data).join(',') + ')';
-          query += fields + ' VALUES (' + nextID + ', ' + Object.keys(data).map(f => {
-            if(!isNaN(data[f]))
-              return data[f];
-            else
-              return "'" + data[f].replace(/\'/g, '\'') + "'";
-          }).join(',') + ')';
+          query += fields + ' VALUES (' + nextID + ',' +
+            Object.keys(data).map(f => {
+              if(!isNaN(data[f]))
+                return data[f];
+              else
+                return '(E\'' + data[f].replace(/\'/g, '\\\'') + '\')::text';
+            }).join(',') + ')';
 
           // Insert our new row
           this.cnx.run(query)
