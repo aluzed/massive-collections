@@ -1,6 +1,6 @@
-# v1.2.0 (next release)
+# v1.2.0
 
-- Adding hooks tests
+- Starting hooks tests (not finished)
 
 ================================================================================
 
