@@ -9,6 +9,7 @@
 const { InvalidFormat, CannotBeEmpty } = require('./errors');
 const Promise = require('bluebird');
 let __collections = {};
+const moment = require('moment');
 
 function ParseConditions(cnds) {
   let where = [];
@@ -434,20 +435,30 @@ module.exports = class MassiveCollection {
             or.push(newCond);
         }
 
-        let newQuery = 'UPDATE ' + this.tableName + ' SET ';
+        let newQuery = 'UPDATE ' + this.tableName + ' SET';
         let findQuery = 'SELECT * FROM ' + this.tableName;
 
         // Set fields
         Object.keys(data).map(field => {
-          newQuery += field + ' = ';
+          newQuery += ' ' + field + ' = ';
 
-          // If it is a number
-          if(!isNaN(data[field])) {
+          // Date
+          if (data[field] instanceof Date)  {
+            data[field] = "'" + moment(data[field]).format('YYYY-MM-DD HH:mm:ss') + "'";
             newQuery += data[field] + ',';
           }
-          // If it is a string, add quote
+          // Array
+          else if (data[field] instanceof Array) {
+            data[field] = "'" + JSON.stringify(data[field]) + "'";
+            newQuery += data[field] + ','
+          }
+          // Number
+          else if (!isNaN(data[field])) {
+            newQuery +=  data[field] + ',';
+          }
+          // Any
           else {
-            newQuery += "'" + data[field] + "',";
+            newQuery += "'" + data[field].toString() + "',";
           }
         });
 

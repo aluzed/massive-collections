@@ -140,7 +140,8 @@ describe('Massive-Collections tests', () => {
     FakeTable.updateAll({
       'username ilike': 'j%'
     }, {
-      password: 'blablabla'
+      password: 'blablabla',
+      modified: new Date()
     }).then(users => {
       // Check if users have been correctly updated
       expect(users.find(u => u.username === 'John Doe')).to.deep.include({
