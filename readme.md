@@ -217,7 +217,7 @@ Returns: {Array} (deleted items)
 |:-----------|:-------|:-----------------|:------------------------------------|
 | conditions | Object | WHERE conditions | { "name ~~": "jo%"  }  // name like |
 
-`Collection.removeAll(id)`
+`Collection.removeAll(conditions)`
 
 ```javascript
 
@@ -231,13 +231,24 @@ Returns: {Array} (deleted items)
 
 ### Flush method
 
-`Collection.flush()`
+Purpose: Remove any rows in that table
+
+| Parameter  | Type    | Description                                                         | Example    |
+|:-----------|:--------|:--------------------------------------------------------------------|:-----------|
+| reset_seq  | Boolean | (Optionnal) Describe if we need to reset the linked sequence or not | true|false |
+
+`Collection.flush(reset_seq)`
 
 ```javascript
 
-  UsersCollection.flush().then(res => {
-    console.log(res);
+  UsersCollection.flush().then(()  => {
+
   });
+
+  // Reset sequence
+  UsersCollection.flush(true).then(() => {
+
+  })
 
 ```
 

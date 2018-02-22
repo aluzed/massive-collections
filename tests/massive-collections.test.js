@@ -216,12 +216,22 @@ describe('Massive-Collections tests', () => {
   })
 
   // flush method, clear data before exiting
-  it('Should clean data', done => {
-    FakeTable.flush().then(() => {
-      FakeTable.find({}).then(res => {
-        expect(res.length).to.equal(0);
-        done();
-      });
-    });
+  // flush
+  it('Should flush our table', done =>{
+    FakeTable.flush(true)
+    .then(() => {
+      processDB.run("SELECT nextval('fake_table_id_seq')").then(res => {
+        if(res.length < 1)
+          throw new Error('Bad sequence result');
+
+        res = res[0];
+        expect(res).to.have.property('nextval').be.equal('1');
+        
+        FakeTable.find({}).then(res => {
+          expect(res.length).to.equal(0);
+          done();
+        });
+      })
+    })
   });
 })

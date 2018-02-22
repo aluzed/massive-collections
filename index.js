@@ -653,7 +653,10 @@ module.exports = class MassiveCollection {
    *
    * @returns {Promise}
    */
-  flush() {
+  flush(reset_seq) {
+    if(typeof reset_seq === "undefined")
+      reset_seq = false;
+
     return new Promise((resolve, reject) => {
       if (!!this.pre.flush) {
         this.pre.flush(resolve);
@@ -669,7 +672,15 @@ module.exports = class MassiveCollection {
             if (!!this.post.flush)
               this.post.flush();
 
-            resolve();
+            if(reset_seq) {
+              this.cnx.run('ALTER SEQUENCE ' + this.tableName + '_id_seq RESTART')
+                .then(() => {
+                  resolve();
+                })
+            }
+            else {
+              resolve();
+            }
           })
           .catch(err => {
             reject(err);
