@@ -9,6 +9,7 @@
 const { InvalidFormat, CannotBeEmpty } = require('./errors');
 const Promise = require('bluebird');
 let __collections = {};
+const moment = require('moment');
 
 function ParseConditions(cnds) {
   let where = [];
@@ -315,18 +316,18 @@ module.exports = class MassiveCollection {
     .then(data => {
       return new Promise((resolve, reject) => {
         this.db.insert(data)
-          .then((res) => {
-            if(!!this.toJS)
-              res = this.toJS(res);
+        .then(res => {
+          if(!!this.toJS)
+            res = this.toJS(res);
 
-            if(!!this.post.insert)
-              this.post.insert(res);
+          if(!!this.post.insert)
+            this.post.insert(res);
 
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          })
+          resolve(res);
+        })
+        .catch(err => {
+          reject(err);
+        });
       });
     });
   }
@@ -434,20 +435,30 @@ module.exports = class MassiveCollection {
             or.push(newCond);
         }
 
-        let newQuery = 'UPDATE ' + this.tableName + ' SET ';
+        let newQuery = 'UPDATE ' + this.tableName + ' SET';
         let findQuery = 'SELECT * FROM ' + this.tableName;
 
         // Set fields
         Object.keys(data).map(field => {
-          newQuery += field + ' = ';
+          newQuery += ' ' + field + ' = ';
 
-          // If it is a number
-          if(!isNaN(data[field])) {
+          // Date
+          if (data[field] instanceof Date)  {
+            data[field] = "'" + moment(data[field]).format('YYYY-MM-DD HH:mm:ss') + "'";
             newQuery += data[field] + ',';
           }
-          // If it is a string, add quote
+          // Array
+          else if (data[field] instanceof Array) {
+            data[field] = "'" + JSON.stringify(data[field]) + "'";
+            newQuery += data[field] + ','
+          }
+          // Number
+          else if (!isNaN(data[field])) {
+            newQuery +=  data[field] + ',';
+          }
+          // Any
           else {
-            newQuery += "'" + data[field] + "',";
+            newQuery += "'" + data[field].toString() + "',";
           }
         });
 
@@ -460,7 +471,7 @@ module.exports = class MassiveCollection {
         }
 
         let ids = [];
-        
+
         // Find rows to update
         this.cnx.run(findQuery).then(res => {
           res.map(row => {
@@ -640,9 +651,13 @@ module.exports = class MassiveCollection {
    *
    * Remove the entire table
    *
+   * @param {Boolean} reset_seq 
    * @returns {Promise}
    */
-  flush() {
+  flush(reset_seq) {
+    if(typeof reset_seq === "undefined")
+      reset_seq = false;
+
     return new Promise((resolve, reject) => {
       if (!!this.pre.flush) {
         this.pre.flush(resolve);
@@ -658,7 +673,15 @@ module.exports = class MassiveCollection {
             if (!!this.post.flush)
               this.post.flush();
 
-            resolve();
+            if(reset_seq) {
+              this.cnx.run('ALTER SEQUENCE ' + this.tableName + '_id_seq RESTART')
+                .then(() => {
+                  resolve();
+                })
+            }
+            else {
+              resolve();
+            }
           })
           .catch(err => {
             reject(err);
@@ -688,13 +711,8 @@ module.exports = class MassiveCollection {
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        this.db.find({ id })
+        this.db.findOne(id)
           .then((res) => {
-            if(!res[0])
-              resolve(null);
-
-            res = res[0];
-
             if (!!this.toJS)
               res = this.toJS(res);
 

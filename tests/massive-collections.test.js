@@ -140,7 +140,8 @@ describe('Massive-Collections tests', () => {
     FakeTable.updateAll({
       'username ilike': 'j%'
     }, {
-      password: 'blablabla'
+      password: 'blablabla',
+      modified: new Date()
     }).then(users => {
       // Check if users have been correctly updated
       expect(users.find(u => u.username === 'John Doe')).to.deep.include({
@@ -190,6 +191,7 @@ describe('Massive-Collections tests', () => {
 
   // Test preHook Insert
   it('Should test preHook insert', done => {
+
     FakeTable.preHook('insert', function (next, data) {
       data.username = data.username.replace(/[\.\-\'\"]/g, '_');
       data.password = data.password.replace(/\s/g, '');
@@ -202,11 +204,11 @@ describe('Massive-Collections tests', () => {
     });
 
     FakeTable.insert({
-      username: 'Lord-Eddard.Stark',
+      username: "Lord-Eddard.Stark'Ao",
       password: 'please dont'
     }).then(user => {
       expect(user).to.deep.include({
-        username: 'Lord_Eddard_Stark',
+        username: 'Lord_Eddard_Stark_Ao',
         password: '706c65617365646f6e74'
       });
       done();
@@ -214,12 +216,22 @@ describe('Massive-Collections tests', () => {
   })
 
   // flush method, clear data before exiting
-  it('Should clean data', done => {
-    FakeTable.flush().then(() => {
-      FakeTable.find({}).then(res => {
-        expect(res.length).to.equal(0);
-        done();
-      });
-    });
+  // flush
+  it('Should flush our table', done =>{
+    FakeTable.flush(true)
+    .then(() => {
+      processDB.run("SELECT nextval('fake_table_id_seq')").then(res => {
+        if(res.length < 1)
+          throw new Error('Bad sequence result');
+
+        res = res[0];
+        expect(res).to.have.property('nextval').be.equal('1');
+        
+        FakeTable.find({}).then(res => {
+          expect(res.length).to.equal(0);
+          done();
+        });
+      })
+    })
   });
 })
