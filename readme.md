@@ -294,9 +294,10 @@ UsersCollection.preHook('update', function (next, data) {
 To assign a post hook, we use the following method : `Collection.postHook(hookName, callback)`
 
 ```javascript
-UsersCollection.postHook('update', function (data) {
-  console.log(data);
-  myRestartFunction();
+UsersCollection.postHook('update', function (next, data) {
+  data.new_field = 'qwerty';
+  myRestartFunction(); // any action
+  next(data);
 });
 ```
 

@@ -1,14 +1,10 @@
-<<<<<<< HEAD
-# v1.2.1
+# v1.2.6
 
-- Add/Remove Types from CLI
+- Changing post hooks to promises
 
 ================================================================================
 
-# v1.2.0
-=======
-# v.1.2.5
->>>>>>> 72a566f64f8532d9b2d971478dc5285afa1d4fae
+# v1.2.5
 
 - Reset sequence on flush
 
