@@ -160,6 +160,18 @@ describe('Massive-Collections tests', () => {
     });
   });
 
+  it('Should test postHook get', done => {
+    FakeTable.postHook('get', function(next, data) {
+      data.hidden_field = "secret";
+      next(data);
+    })
+
+    FakeTable.get(tmpId).then(item => {
+      expect(item).to.have.property('hidden_field').to.equal('secret');
+      done();
+    })
+  })
+
   // remove method
   it('Should remove a row', done => {
     FakeTable.remove(tmpId).then(() => {
@@ -191,7 +203,6 @@ describe('Massive-Collections tests', () => {
 
   // Test preHook Insert
   it('Should test preHook insert', done => {
-
     FakeTable.preHook('insert', function (next, data) {
       data.username = data.username.replace(/[\.\-\'\"]/g, '_');
       data.password = data.password.replace(/\s/g, '');
@@ -213,7 +224,7 @@ describe('Massive-Collections tests', () => {
       });
       done();
     })
-  })
+  });
 
   // flush method, clear data before exiting
   // flush
@@ -226,7 +237,7 @@ describe('Massive-Collections tests', () => {
 
         res = res[0];
         expect(res).to.have.property('nextval').be.equal('1');
-        
+
         FakeTable.find({}).then(res => {
           expect(res.length).to.equal(0);
           done();
