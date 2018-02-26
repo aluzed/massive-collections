@@ -664,6 +664,7 @@ module.exports = class MassiveCollection {
    *
    * Remove the entire table
    *
+   * @param {Boolean} reset_seq 
    * @returns {Promise}
    */
   flush(reset_seq) {
