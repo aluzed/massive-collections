@@ -72,6 +72,9 @@ describe('Massive-Collections tests', () => {
         password: 'qwerty'
       });
 
+      expect(row.created instanceof Date).to.be.true;
+      expect(row.modified instanceof Date).to.be.true;
+
       done();
     })
   });
