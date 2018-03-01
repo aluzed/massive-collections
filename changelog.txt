@@ -1,3 +1,9 @@
+# v1.2.7
+
+- Move dbFormat before real database query to be the last action (insert, update, updateAll)
+
+================================================================================
+
 # v1.2.6
 
 - Changing post hooks to promises

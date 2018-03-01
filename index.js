@@ -302,9 +302,6 @@ module.exports = class MassiveCollection {
     if (Object.keys(data).length < 1)
       throw new CannotBeEmpty('data');
 
-    if(!!this.toDB)
-      data = this.toDB(data);
-
     return new Promise((resolve, reject) => {
       if(!!this.pre.insert) {
         this.pre.insert(resolve, data);
@@ -315,8 +312,13 @@ module.exports = class MassiveCollection {
     })
     .then(data => {
       return new Promise((resolve, reject) => {
+
+        if(!!this.toDB)
+          data = this.toDB(data);
+
         this.db.insert(data)
         .then(res => {
+
           if(!!this.toJS)
             res = this.toJS(res);
 
@@ -358,9 +360,6 @@ module.exports = class MassiveCollection {
     if (Object.keys(data).length < 1)
       throw new CannotBeEmpty('data');
 
-    if (!!this.toDB)
-      data = this.toDB(data);
-
     return new Promise((resolve, reject) => {
       if (!!this.pre.update) {
         this.pre.update(resolve, data);
@@ -371,6 +370,10 @@ module.exports = class MassiveCollection {
     })
     .then(data =>  {
       return new Promise((resolve, reject) => {
+
+        if (!!this.toDB)
+          data = this.toDB(data);
+
         this.db.update({ id }, data)
           .then((res) => {
             if(res.length > 0)
@@ -412,9 +415,6 @@ module.exports = class MassiveCollection {
     if (Object.keys(data).length < 1)
       throw new CannotBeEmpty('data');
 
-    if (!!this.toDB)
-      data = this.toDB(data);
-
     return new Promise((resolve, reject) => {
       if(!!this.pre.updateAll)
         this.pre.updateAll(resolve, data);
@@ -423,6 +423,9 @@ module.exports = class MassiveCollection {
     })
     .then(() => {
       return new Promise((resolve, reject) => {
+
+        if (!!this.toDB)
+          data = this.toDB(data);
 
         let or = [];
 
@@ -664,7 +667,7 @@ module.exports = class MassiveCollection {
    *
    * Remove the entire table
    *
-   * @param {Boolean} reset_seq 
+   * @param {Boolean} reset_seq
    * @returns {Promise}
    */
   flush(reset_seq) {
