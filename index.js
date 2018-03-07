@@ -202,6 +202,7 @@ module.exports = class MassiveCollection {
   setcnx(cnx) {
     this.cnx = cnx;
     this.db = this.cnx[this.tableName];
+    return this.db;
   }
 
   /**
@@ -304,10 +305,10 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if(!!this.pre.insert) {
-        this.pre.insert(resolve, data);
+        return this.pre.insert(resolve, data);
       }
       else {
-        resolve(data);
+        return resolve(data);
       }
     })
     .then(data => {
@@ -316,22 +317,22 @@ module.exports = class MassiveCollection {
         if(!!this.toDB)
           data = this.toDB(data);
 
-        this.db.insert(data)
+        return this.db.insert(data)
         .then(res => {
 
           if(!!this.toJS)
             res = this.toJS(res);
 
           if(!!this.post.insert) {
-            this.post.insert(resolve, res);
+            return this.post.insert(resolve, res);
           }
           else {
-            resolve(res);
+            return resolve(res);
           }
 
         })
         .catch(err => {
-          reject(err);
+          return reject(err);
         });
       });
     });
@@ -362,10 +363,10 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if (!!this.pre.update) {
-        this.pre.update(resolve, data);
+        return this.pre.update(resolve, data);
       }
       else {
-        resolve(data);
+        return resolve(data);
       }
     })
     .then(data =>  {
@@ -374,7 +375,7 @@ module.exports = class MassiveCollection {
         if (!!this.toDB)
           data = this.toDB(data);
 
-        this.db.update({ id }, data)
+        return this.db.update({ id }, data)
           .then((res) => {
             if(res.length > 0)
               res = res[0];
@@ -383,14 +384,14 @@ module.exports = class MassiveCollection {
               res.map(r => this.toJS(r));
 
             if (!!this.post.update) {
-              this.post.update(resolve, res);
+              return this.post.update(resolve, res);
             }
             else {
-              resolve(res);
+              return resolve(res);
             }
           })
           .catch(err => {
-            reject(err);
+            return reject(err);
           })
       });
     });
@@ -417,9 +418,9 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if(!!this.pre.updateAll)
-        this.pre.updateAll(resolve, data);
+        return this.pre.updateAll(resolve, data);
       else
-        resolve();
+        return resolve();
     })
     .then(() => {
       return new Promise((resolve, reject) => {
@@ -481,7 +482,7 @@ module.exports = class MassiveCollection {
         let ids = [];
 
         // Find rows to update
-        this.cnx.run(findQuery).then(res => {
+        return this.cnx.run(findQuery).then(res => {
           res.map(row => {
             // Add id to ids list
             ids.push(row.id);
@@ -497,10 +498,10 @@ module.exports = class MassiveCollection {
               // Get updated rows
               this.cnx.run(selectQuery).then(res => {
                 if(!!this.post.updateAll) {
-                  this.post.updateAll(resolve, res);
+                  return this.post.updateAll(resolve, res);
                 }
                 else {
-                  resolve(res);
+                  return resolve(res);
                 }
               })
             })
@@ -510,15 +511,15 @@ module.exports = class MassiveCollection {
             let data = [];
 
             if(!!this.post.updateAll) {
-              this.post.updateAll(resolve, data);
+              return this.post.updateAll(resolve, data);
             }
             else {
-              resolve(data);
+              return resolve(data);
             }
           }
         })
         .catch(err => {
-          reject(err);
+          return reject(err);
         })
       })
     })
@@ -541,10 +542,10 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if (!!this.pre.remove) {
-        this.pre.remove(resolve);
+        return this.pre.remove(resolve);
       }
       else {
-        resolve();
+        return resolve();
       }
     })
     .then(() => {
@@ -558,14 +559,14 @@ module.exports = class MassiveCollection {
               res.map(r => this.toJS(r));
 
             if (!!this.post.remove) {
-              this.post.remove(res, resolve);
+              return this.post.remove(res, resolve);
             }
             else {
-              resolve(res);
+              return resolve(res);
             }
           })
           .catch(err => {
-            reject(err);
+            return reject(err);
           })
       });
     });
@@ -592,10 +593,10 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if (!!this.pre.removeAll) {
-        this.pre.removeAll(resolve);
+        return this.pre.removeAll(resolve);
       }
       else {
-        resolve();
+        return resolve();
       }
     })
     .then(() => {
@@ -626,7 +627,7 @@ module.exports = class MassiveCollection {
         let ids = [];
 
         // Find rows to update
-        this.cnx.run(findQuery)
+        return this.cnx.run(findQuery)
           .then(res => {
 
             res.map(r => {
@@ -642,20 +643,20 @@ module.exports = class MassiveCollection {
                     res.map(r => this.toJS(r));
 
                   if (!!this.post.removeAll) {
-                    this.post.removeAll(resolve, res);
+                    return this.post.removeAll(resolve, res);
                   }
                   else {
                     // Return deleted results
-                    resolve(res);
+                    return resolve(res);
                   }
                 });
             }
             else {
-              resolve([]);
+              return resolve([]);
             }
           })
           .catch(err => {
-            reject(err);
+            return reject(err);
           })
       });
     });
@@ -676,38 +677,38 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if (!!this.pre.flush) {
-        this.pre.flush(resolve);
+        return this.pre.flush(resolve);
       }
       else {
-        resolve();
+        return resolve();
       }
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        this.cnx.run('TRUNCATE ' + this.tableName)
+        return this.cnx.run('TRUNCATE ' + this.tableName)
           .then(() => {
             if(reset_seq) {
-              this.cnx.run('ALTER SEQUENCE ' + this.tableName + '_id_seq RESTART')
+              return this.cnx.run('ALTER SEQUENCE ' + this.tableName + '_id_seq RESTART')
                 .then(() => {
                   if (!!this.post.flush) {
-                    this.post.flush(resolve);
+                    return this.post.flush(resolve);
                   }
                   else {
-                    resolve();
+                    return resolve();
                   }
                 })
             }
             else {
               if (!!this.post.flush) {
-                this.post.flush(resolve);
+                return this.post.flush(resolve);
               }
               else {
-                resolve();
+                return resolve();
               }
             }
           })
           .catch(err => {
-            reject(err);
+            return reject(err);
           })
       });
     });
@@ -728,26 +729,26 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if(!!this.pre.get)
-        this.pre.get(resolve);
+        return this.pre.get(resolve);
       else
-        resolve();
+        return resolve();
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        this.db.findOne(id)
+        return this.db.findOne(id)
           .then((res) => {
             if (!!this.toJS)
               res = this.toJS(res);
 
             if (!!this.post.get) {
-              this.post.get(resolve, res);
+              return this.post.get(resolve, res);
             }
             else {
-              resolve(res);
+              return resolve(res);
             }
           })
           .catch(err => {
-            reject(err);
+            return reject(err);
           })
       })
     })
@@ -767,9 +768,9 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if(!!this.pre.count)
-        this.pre.count(resolve);
+        return this.pre.count(resolve);
       else
-        resolve();
+        return resolve();
     })
     .then(() => {
       return new Promise((resolve, reject) => {
@@ -794,7 +795,7 @@ module.exports = class MassiveCollection {
         if(or.length > 0)
           newQuery += ' WHERE ' + or.join(' OR ');
 
-        this.cnx.run(newQuery).then(res => {
+        return this.cnx.run(newQuery).then(res => {
           // res is an array, we must convert it
           if(res.length > 0)
             res = res[0];
@@ -806,14 +807,14 @@ module.exports = class MassiveCollection {
           res.count = parseInt(res.count, 10);
 
           if(!!this.post.count) {
-            this.post.count(resolve, res.count);
+            return this.post.count(resolve, res.count);
           }
           else {
-            resolve(res.count);
+            return resolve(res.count);
           }
         })
         .catch(err => {
-          reject(err);
+          return reject(err);
         })
       })
     })
@@ -838,9 +839,9 @@ module.exports = class MassiveCollection {
 
     return new Promise((resolve, reject) => {
       if (!!this.pre.find)
-        this.pre.find(resolve);
+        return this.pre.find(resolve);
       else
-        resolve();
+        return resolve();
     })
     .then(() => {
       return new Promise((resolve, reject) => {
@@ -927,20 +928,20 @@ module.exports = class MassiveCollection {
 
         let query = (searchType === "normal") ? this.db.find(conditions, options) : this.cnx.run(customQuery)
 
-        query
+        return query
           .then((res) => {
             if (!!this.toJS)
               res.map(r => this.toJS(r));
 
             if (!!this.post.find) {
-              this.post.find(resolve, res);
+              return this.post.find(resolve, res);
             }
             else {
-              resolve(res);
+              return resolve(res);
             }
           })
           .catch(err => {
-            reject(err);
+            return reject(err);
           })
       });
     });

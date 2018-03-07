@@ -1,10 +1,10 @@
 {
   "name": "massive-collections",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "The easiest collections handler for massive-js",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/_mocha ./tests"
+    "test": "node ./node_modules/.bin/_mocha ./tests --exit"
   },
   "keywords": [
     "massive-js",

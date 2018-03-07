@@ -2,6 +2,6 @@ module.exports = {
   host: 'localhost',
   port: 5432,
   database: 'testdb',
-  user: 'quizer_user',
+  user: 'quizeruser',
   password: 'abobo10'
 };
