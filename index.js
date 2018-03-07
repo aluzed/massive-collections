@@ -492,11 +492,11 @@ module.exports = class MassiveCollection {
           // If there is no data to update, return empty array
           if(ids.length > 0) {
             // Update rows
-            this.cnx.run(newQuery).then(() => {
+            return this.cnx.run(newQuery).then(() => {
               let selectQuery = 'SELECT * FROM ' + this.tableName + ' WHERE id IN (' + ids.join(',') + ')';
 
               // Get updated rows
-              this.cnx.run(selectQuery).then(res => {
+              return this.cnx.run(selectQuery).then(res => {
                 if(!!this.post.updateAll) {
                   return this.post.updateAll(resolve, res);
                 }
@@ -550,7 +550,7 @@ module.exports = class MassiveCollection {
     })
     .then(() => {
       return new Promise((resolve, reject) => {
-        this.db.destroy({ id })
+        return this.db.destroy({ id })
           .then((res) => {
             if(res.length > 0)
               res = res[0];
@@ -637,7 +637,7 @@ module.exports = class MassiveCollection {
             newQuery += ' WHERE id in (' + ids.join(',') + ')';
 
             if(ids.length > 0) {
-              this.cnx.run(newQuery)
+              return this.cnx.run(newQuery)
                 .then(() => {
                   if (!!this.toJS)
                     res.map(r => this.toJS(r));
