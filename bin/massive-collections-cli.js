@@ -15,37 +15,40 @@ const currentPath = path.resolve(__dirname);
 // File that will contain our credentials
 const credentialsPath = path.join(__dirname, 'massive-collections_credentials.json');
 
+let gitIgnorePath = "";
+
 // Check git ignore
 if(currentPath.indexOf('node_modules') > -1) {
-  const parentPath = path.resolve(currentPath.split('node_modules')[0]);
+  let parentPath = path.resolve(currentPath.split('node_modules')[0]);
+  gitIgnorePath = path.join(parentPath, '.gitignore');
+}
+else {
+  gitIgnorePath = path.join(process.cwd(), '.gitignore');
+}
 
-  const gitIgnorePath = path.join(parentPath, '.gitignore');
+let credentialsRelative = credentialsPath.substring(path.dirname(gitIgnorePath).length, credentialsPath.length);
 
-  // Get relative path from gitignore file
-  const credentialsRelative = credentialsPath.substring(parentPath.length, credentialsPath.length);
+if(fs.existsSync(gitIgnorePath) && fs.lstatSync(gitIgnorePath)) {
+  const gitIgnoreContent = fs.readFileSync(gitIgnorePath, 'utf8');
 
-  if(fs.existsSync(gitIgnorePath) && fs.lstatSync(gitIgnorePath)) {
-    const gitIgnoreContent = fs.readFileSync(gitIgnorePath, 'utf8');
+  let splitted = gitIgnoreContent.split(os.EOL);
 
-    let splitted = gitIgnoreContent.split(os.EOL);
+  let found = false;
 
-    let found = false;
-
-    for(let i in splitted) {
-      if(splitted[i].match(credentialsRelative + "\s*$")) {
-        found = true;
-      }
+  for(let i in splitted) {
+    if(splitted[i].match(credentialsRelative + "\s*$")) {
+      found = true;
     }
+  }
 
-    // If credientials is not in gitignore
-    if(!found) {
-      // Add it
-      splitted.push('.' + credentialsRelative);
+  // If credientials is not in gitignore
+  if(!found) {
+    // Add it
+    splitted.push(credentialsRelative.replace(/^\//, ''));
 
-      // Save
-      fs.writeFileSync(gitIgnorePath,
-        splitted.filter(r => r.trim() !== "").join(os.EOL)); // remove empty rows
-    }
+    // Save
+    fs.writeFileSync(gitIgnorePath,
+      splitted.filter(r => r.trim() !== "").join(os.EOL)); // remove empty rows
   }
 }
 
