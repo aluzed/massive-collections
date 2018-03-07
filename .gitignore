@@ -1,3 +1,3 @@
 node_modules
-./tests/config.js
-./bin/massive-collections_credentials.json
+tests/config.js
+bin/massive-collections_credentials.json
